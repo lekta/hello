@@ -16,8 +16,7 @@ namespace LH.Cosmos {
 
 
         private void Awake() {
-            float screenWidth = Camera.orthographicSize * 2f * Camera.aspect;
-            float fieldRadius = screenWidth * Config.RadiusInScreens;
+            float fieldRadius = Config.FieldRadius;
 
             _bodies.Init(this, fieldRadius);
             _cosmosCamera.Init(Camera, Background, fieldRadius, CameraMoveParams);

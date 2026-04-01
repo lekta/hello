@@ -45,44 +45,47 @@ namespace LH.Cosmos {
                 _bodies.Add(body);
             }
 
-            var rng = new Random(cfg.Seed);
-            float radius = _fieldRadius;
+            GenerateField(cfg.Seed, cfg.BodyCount, _fieldRadius, _datas);
 
-            // Центры скоплений — в пределах 80% радиуса, чтобы скопления не упирались в край
+            for (int i = 0; i < _datas.Count; i++) {
+                _bodies[i].Setup(_datas[i]);
+            }
+        }
+
+        public static void GenerateField(int seed, int count, float radius, List<CosmicBodyData> outDatas) {
+            outDatas.Clear();
+            var rng = new Random(seed);
+
             var clusterCenters = new Vector2[CLUSTER_COUNT];
             for (int i = 0; i < CLUSTER_COUNT; i++) {
                 clusterCenters[i] = RandomInDisc(rng, radius * 0.8f);
             }
 
-            _datas.Clear();
-            for (int i = 0; i < cfg.BodyCount; i++) {
-                Vector2 pos;
-                if (rng.NextDouble() < CLUSTERED_RATIO) {
-                    // Гауссово рассеивание вокруг центра кластера
-                    var center = clusterCenters[rng.Next(CLUSTER_COUNT)];
-                    Vector2 offset = RandomGaussian2D(rng) * (radius * 0.18f);
-                    pos = center + offset;
-
-                    // Не выходим за круг
-                    float mag = pos.magnitude;
-                    if (mag > radius)
-                        pos *= radius / mag;
-                } else {
-                    // Фоновые звёзды — равномерно по диску
-                    pos = RandomInDisc(rng, radius);
-                }
-
-                // Размер: степенной закон — большинство звёзд мелкие
+            for (int i = 0; i < count; i++) {
+                Vector2 pos = NextStarPosition(rng, radius, clusterCenters);
                 float scale = NextStarScale(rng);
 
-                var data = new CosmicBodyData {
+                outDatas.Add(new CosmicBodyData {
                     Index = i,
                     AnchorPosition = pos,
                     AnchorScale = scale,
-                };
+                });
+            }
+        }
 
-                _datas.Add(data);
-                _bodies[i].Setup(data);
+        private static Vector2 NextStarPosition(Random rng, float radius, Vector2[] clusterCenters) {
+            if (rng.NextDouble() < CLUSTERED_RATIO) {
+                var center = clusterCenters[rng.Next(CLUSTER_COUNT)];
+                Vector2 offset = RandomGaussian2D(rng) * (radius * 0.18f);
+                Vector2 pos = center + offset;
+
+                float mag = pos.magnitude;
+                if (mag > radius)
+                    pos *= radius / mag;
+
+                return pos;
+            } else {
+                return RandomInDisc(rng, radius);
             }
         }
 

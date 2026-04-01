@@ -15,4 +15,4 @@ MonoBehaviour:
   CosmicBody: {fileID: 1360830325204513465, guid: 7082ae6fa2fb50b4bb0271b91890de85, type: 3}
   Seed: 42
   BodyCount: 720
-  RadiusInScreens: 2
+  FieldRadius: 2000

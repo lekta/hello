@@ -2,12 +2,13 @@
 using UnityEngine;
 
 namespace LH {
+    [CreateAssetMenu(menuName = "LH/Cosmos Config")]
     public class CosmosConfig : ScriptableObject {
         public CosmicBodyView CosmicBody;
 
-        // перенести в отдельный класс
         public int Seed = 42;
         public int BodyCount = 600;
-        public float RadiusInScreens = 2f;
+
+        public float FieldRadius = 3000f;
     }
 }
