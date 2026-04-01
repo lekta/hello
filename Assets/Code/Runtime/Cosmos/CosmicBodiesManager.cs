@@ -17,13 +17,15 @@ namespace LH.Cosmos {
         private const int CLUSTER_COUNT = 7;
 
         private CosmosController _cosmos;
+        private float _fieldRadius;
         private Transform _bodiesHolder;
         private readonly List<CosmicBodyData> _datas = new();
         private readonly List<CosmicBodyView> _bodies = new();
 
 
-        public void Init(CosmosController cosmos) {
+        public void Init(CosmosController cosmos, float fieldRadius) {
             _cosmos = cosmos;
+            _fieldRadius = fieldRadius;
 
             _bodiesHolder = new GameObject("bodies").transform;
             _bodiesHolder.SetParent(_cosmos.transform);
@@ -44,9 +46,7 @@ namespace LH.Cosmos {
             }
 
             var rng = new Random(cfg.Seed);
-
-            float screenWidth = Camera.main.orthographicSize * 2f * Camera.main.aspect;
-            float radius = screenWidth * cfg.RadiusInScreens;
+            float radius = _fieldRadius;
 
             // Центры скоплений — в пределах 80% радиуса, чтобы скопления не упирались в край
             var clusterCenters = new Vector2[CLUSTER_COUNT];
