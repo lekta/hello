@@ -6,11 +6,9 @@ using Random = System.Random;
 
 namespace LH.Cosmos {
     public class CosmicBodiesManager {
-        // Соотношения групп звёзд по размеру
+        // DO: размеры звёзд и вероятности в конфиг
         private const float SMALL_STAR_RATIO = 0.55f;  // тусклые
         private const float MEDIUM_STAR_RATIO = 0.35f; // средние
-
-        // остаток 0.10f — яркие
 
         // Доля звёзд в кластерах vs случайный фон
         private const float CLUSTERED_RATIO = 0.75f;
@@ -105,14 +103,14 @@ namespace LH.Cosmos {
             }
         }
 
-        // Три группы: 55% мелкие (1–3), 35% средние (3–7), 10% яркие (7–12)
+        // Три группы: 55% мелкие (2–4), 35% средние (4–9), 10% яркие (9–13)
         private static float NextStarScale(Random rng) {
             double roll = rng.NextDouble();
             if (roll < SMALL_STAR_RATIO)
-                return 1f + (float)(rng.NextDouble() * 2.0);
+                return 2f + (float)(rng.NextDouble() * 2);
             if (roll < SMALL_STAR_RATIO + MEDIUM_STAR_RATIO)
-                return 3f + (float)(rng.NextDouble() * 4.0);
-            return 7f + (float)(rng.NextDouble() * 5.0);
+                return 4f + (float)(rng.NextDouble() * 5);
+            return 9f + (float)(rng.NextDouble() * 4);
         }
 
         // Равномерная точка внутри диска: sqrt компенсирует смещение к центру

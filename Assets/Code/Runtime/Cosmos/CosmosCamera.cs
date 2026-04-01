@@ -5,8 +5,10 @@ namespace LH.Cosmos {
         private CameraMoveParams _params;
         private Camera _camera;
         private Transform _background;
+
         private float _fieldRadius;
         private Vector2 _velocity;
+        private Vector2 _bgHalfSize;
 
 
         public void Init(Camera camera, Transform background, float fieldRadius, CameraMoveParams moveParams) {
@@ -14,12 +16,15 @@ namespace LH.Cosmos {
             _background = background;
             _fieldRadius = fieldRadius;
             _params = moveParams;
+
+            var sr = background.GetComponent<SpriteRenderer>();
+            if (sr != null)
+                _bgHalfSize = sr.bounds.extents;
         }
 
         public void Update() {
             var camPos = UpdatePosition();
-
-            _background.position = new Vector3(camPos.x * _params.Parallax, camPos.y * _params.Parallax, _background.position.z);
+            UpdateParallax(camPos);
         }
 
         private Vector2 UpdatePosition() {
@@ -86,6 +91,27 @@ namespace LH.Cosmos {
 
             _velocity += pushBack * dt;
             _velocity *= 1f - norm * 5f * dt;
+        }
+
+        private void UpdateParallax(Vector2 camPos) {
+            float parallax = _params.Parallax;
+            float pixelSize = _camera.orthographicSize * 2f / Screen.height;
+            float margin = pixelSize * 2f;
+            float maxShiftX = _bgHalfSize.x - _camera.orthographicSize * _camera.aspect - margin;
+            float maxShiftY = _bgHalfSize.y - _camera.orthographicSize - margin;
+
+            float offsetX = SmoothClamp(camPos.x * (parallax - 1f), maxShiftX);
+            float offsetY = SmoothClamp(camPos.y * (parallax - 1f), maxShiftY);
+
+            _background.position = new Vector3(camPos.x + offsetX, camPos.y + offsetY, _background.position.z);
+        }
+
+        private static float SmoothClamp(float value, float limit) {
+            if (limit <= 0f)
+                return 0f;
+            float t = Mathf.Clamp(value / limit, -10f, 10f);
+            float e = Mathf.Exp(2f * t);
+            return limit * (e - 1f) / (e + 1f);
         }
     }
 }
