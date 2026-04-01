@@ -27,10 +27,9 @@ namespace LH.Dev {
         }
 
         private void DrawCameraPreview() {
-            var iconName = _showSceneGizmos ? "animationvisibilitytoggleon" : "animationvisibilitytoggleoff";
-            var icon = EditorGUIUtility.IconContent(iconName);
-
             using var horizontal = new EditorGUILayout.HorizontalScope();
+
+            var icon = _showSceneGizmos ? DevGui.Icon.EyeOn : DevGui.Icon.EyeOff;
 
             if (GUILayout.Button(icon, EditorStyles.miniButton, GUILayout.Width(28), GUILayout.Height(20))) {
                 _showSceneGizmos = !_showSceneGizmos;
