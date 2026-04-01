@@ -2,51 +2,41 @@ using UnityEngine;
 
 namespace LH.Cosmos {
     public class CosmosCamera {
-        private const float DEAD_ZONE = 0.25f;      // 1/4 от центра до края
-        private const float MAX_SPEED_ZONE = 0.67f; // 2/3 от центра — макс. скорость
-        private const float SMOOTHING = 4f;
-        private const float BOUNDARY_STIFFNESS = 10f;
-        private const float BOUNDARY_OVERSHOOT = 0.5f;
-        private const float PARALLAX = 0.1f;
-
+        private CameraMoveParams _params;
         private Camera _camera;
         private Transform _background;
         private float _fieldRadius;
-        private float _hardLimit;
-        private float _maxSpeed;
         private Vector2 _velocity;
 
 
-        public void Init(Camera camera, Transform background, float fieldRadius, float scrollSpeed) {
+        public void Init(Camera camera, Transform background, float fieldRadius, CameraMoveParams moveParams) {
             _camera = camera;
             _background = background;
             _fieldRadius = fieldRadius;
-
-            float screenWidth = _camera.orthographicSize * 2f * _camera.aspect;
-            _hardLimit = fieldRadius + screenWidth * BOUNDARY_OVERSHOOT;
-            _maxSpeed = screenWidth * scrollSpeed;
+            _params = moveParams;
         }
 
         public void Update() {
             var camPos = UpdatePosition();
 
-            // Параллакс фона
-            if (_background != null)
-                _background.position = new Vector3(camPos.x * PARALLAX, camPos.y * PARALLAX, _background.position.z);
+            _background.position = new Vector3(camPos.x * _params.Parallax, camPos.y * _params.Parallax, _background.position.z);
         }
 
         private Vector2 UpdatePosition() {
             float dt = Time.deltaTime;
+            float screenWidth = _camera.orthographicSize * 2f * _camera.aspect;
+            float hardLimit = _fieldRadius + screenWidth * _params.BoundaryOvershoot;
+
             Vector2 camPos = _camera.transform.position;
 
-            UpdateVelocity();
-            DumpVelocityByPos(camPos);
+            UpdateVelocity(screenWidth);
+            DumpVelocityByPos(camPos, hardLimit);
 
             camPos += _velocity * dt;
 
             // Жёсткий лимит
-            if (camPos.magnitude > _hardLimit) {
-                camPos = camPos.normalized * _hardLimit;
+            if (camPos.magnitude > hardLimit) {
+                camPos = camPos.normalized * hardLimit;
                 float outward = Vector2.Dot(_velocity, camPos.normalized);
                 if (outward > 0f)
                     _velocity -= camPos.normalized * outward;
@@ -57,8 +47,9 @@ namespace LH.Cosmos {
             return camPos;
         }
 
-        private void UpdateVelocity() {
+        private void UpdateVelocity(float screenWidth) {
             float dt = Time.deltaTime;
+            float maxSpeed = screenWidth * _params.ScrollSpeed;
 
             // Позиция мыши относительно центра экрана, нормализована к [-1, 1]
             Vector2 mouse = Input.mousePosition;
@@ -68,19 +59,19 @@ namespace LH.Cosmos {
             if (offset.magnitude > 1f)
                 offset = offset.normalized;
 
-            // Мёртвая зона → скорость нарастает до макс. на 2/3 экрана
+            // Мёртвая зона → скорость нарастает до макс. на заданной зоне
             float mag = offset.magnitude;
             Vector2 targetVel = Vector2.zero;
-            if (mag > DEAD_ZONE) {
-                float t = Mathf.Clamp01((mag - DEAD_ZONE) / (MAX_SPEED_ZONE - DEAD_ZONE));
-                targetVel = offset.normalized * t * _maxSpeed;
+            if (mag > _params.DeadZone) {
+                float t = Mathf.Clamp01((mag - _params.DeadZone) / (_params.MaxSpeedZone - _params.DeadZone));
+                targetVel = offset.normalized * t * maxSpeed;
             }
 
-            _velocity = Vector2.Lerp(_velocity, targetVel, SMOOTHING * dt);
+            _velocity = Vector2.Lerp(_velocity, targetVel, _params.Smoothing * dt);
         }
 
         // Мягкая граница
-        private void DumpVelocityByPos(Vector2 camPos) {
+        private void DumpVelocityByPos(Vector2 camPos, float hardLimit) {
             float camDist = camPos.magnitude;
             if (camDist < _fieldRadius || camDist < .001f) {
                 return;
@@ -89,9 +80,9 @@ namespace LH.Cosmos {
             float halfWidth = _camera.orthographicSize * _camera.aspect;
 
             float overshoot = camDist - _fieldRadius;
-            float maxOvershoot = _hardLimit - _fieldRadius;
+            float maxOvershoot = hardLimit - _fieldRadius;
             float norm = Mathf.Clamp01(overshoot / maxOvershoot);
-            Vector2 pushBack = -camPos.normalized * norm * norm * BOUNDARY_STIFFNESS * halfWidth * 2f;
+            Vector2 pushBack = -camPos.normalized * norm * norm * _params.BoundaryStiffness * halfWidth * 2f;
 
             _velocity += pushBack * dt;
             _velocity *= 1f - norm * 5f * dt;
