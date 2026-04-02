@@ -58,29 +58,31 @@ namespace LH.Cosmos {
 
         private void ApplyState(CursorState state) {
             bool focus = state == CursorState.Focus;
-            Color color = focus ? Color.red : _baseParticleColor;
+            Color color = focus ? new Color(1f, .0f, .3f, .9f) : _baseParticleColor;
 
             RecolorExistingParticles(color);
 
             var shape = _linkParticles.shape;
-            shape.radius = focus ? _baseRadius * 1.5f : _baseRadius;
+            shape.radius = focus ? _baseRadius * 1.8f : _baseRadius;
             _activeRadiusThickness = focus ? _baseRadiusThickness * 0.5f : _baseRadiusThickness;
 
             var main = _linkParticles.main;
             main.startColor = color;
         }
 
-        private void RecolorExistingParticles(Color color) {
+        private void RecolorExistingParticles(Color32 color) {
             int count = _linkParticles.particleCount;
-            if (count == 0) return;
+            if (count == 0)
+                return;
 
             if (_particleBuffer == null || _particleBuffer.Length < count)
                 _particleBuffer = new ParticleSystem.Particle[count];
 
             _linkParticles.GetParticles(_particleBuffer, count);
-            Color32 c32 = color;
+
             for (int i = 0; i < count; i++)
-                _particleBuffer[i].startColor = c32;
+                _particleBuffer[i].startColor = color;
+
             _linkParticles.SetParticles(_particleBuffer, count);
         }
     }

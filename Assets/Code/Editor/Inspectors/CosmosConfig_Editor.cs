@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using LH.Cosmos;
+using LH.Domain;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,15 +41,16 @@ namespace LH.Dev {
                 return;
 
             DrawFieldBoundary(cfg.FieldRadius);
+            DrawColorZones(cfg.ColorZones);
             EnsureCachedStars(cfg);
             DrawStarsGL();
             DrawHiddenObjects();
         }
 
         private static void DrawFieldBoundary(float radius) {
-            Handles.color = new Color(0.3f, 0.9f, 0.3f, 0.4f);
+            Handles.color = new Color(.3f, .9f, .3f, .4f);
             Handles.DrawWireDisc(Vector3.zero, Vector3.forward, radius);
-            Handles.Label(new Vector3(0f, radius + 0.5f, 0f), "Поле звёзд", EditorStyles.whiteLabel);
+            Handles.Label(new Vector3(0f, radius + .5f, 0f), "Поле звёзд", EditorStyles.whiteLabel);
         }
 
         private void EnsureCachedStars(CosmosConfig cfg) {
@@ -65,7 +67,7 @@ namespace LH.Dev {
             _cachedRadius = cfg.FieldRadius;
             _cachedHiddenCount = cfg.HiddenObjectCount;
 
-            CosmicBodiesManager.GenerateField(cfg.Seed, cfg.BodyCount, cfg.FieldRadius, _cachedStars);
+            CosmicBodiesManager.GenerateField(cfg.Seed, cfg.BodyCount, cfg.FieldRadius, _cachedStars, cfg.ColorZones);
             HiddenObjectsManager.GenerateField(cfg.Seed, cfg.HiddenObjectCount, cfg.FieldRadius, _cachedStars, _cachedHidden);
         }
 
@@ -85,7 +87,7 @@ namespace LH.Dev {
                 float size = star.AnchorScale;
 
                 float brightness = Mathf.Clamp01(size / 12f);
-                GL.Color(new Color(1f, 1f, 0.9f, 0.3f + brightness * 0.7f));
+                GL.Color(star.Color.WithAlpha(.3f + brightness * .7f));
 
                 float half = 5f + size * .25f;
                 float x = star.AnchorPosition.x;
@@ -98,6 +100,24 @@ namespace LH.Dev {
 
             GL.End();
             GL.PopMatrix();
+        }
+
+        private static void DrawColorZones(ColorZone[] zones) {
+            if (zones == null)
+                return;
+
+            for (int i = 0; i < zones.Length; i++) {
+                var zone = zones[i];
+                Vector3 pos = new Vector3(zone.Position.x, zone.Position.y, 0f);
+                Color color = zone.Tint;
+
+                Handles.color = color.WithAlpha(.15f);
+                Handles.DrawSolidDisc(pos, Vector3.forward, zone.Radius);
+
+                Handles.color = color.WithAlpha(.5f);
+                Handles.DrawWireDisc(pos, Vector3.forward, zone.Radius);
+                Handles.Label(pos, $"Zone #{i} ({zone.Strength:P0})", EditorStyles.whiteBoldLabel);
+            }
         }
 
         private void DrawHiddenObjects() {
@@ -120,6 +140,7 @@ namespace LH.Dev {
             _glMaterial.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
             _glMaterial.SetInt("_ZWrite", 0);
             _glMaterial.SetInt("_Cull", 0);
+
             return _glMaterial;
         }
     }

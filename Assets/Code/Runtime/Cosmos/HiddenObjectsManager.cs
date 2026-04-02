@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 using Random = System.Random;
 
 namespace LH.Cosmos {
     public class HiddenObjectsManager {
-        private const float ANOMALY_TREMOR = 1.5f;
+        private const float ANOMALY_TREMOR = .1f;
         private const float ANOMALY_DRIFT = 15f;
         private const float BLACKOUT_DURATION = 0.5f;
         private const float BLACKOUT_INTERVAL_MIN = 40f;
@@ -21,6 +23,7 @@ namespace LH.Cosmos {
         private readonly float[] _blackoutIntervals = new float[10];
         private float[] _focusTimers;
 
+        // DO: в ооп блет
         // Для каждого скрытого объекта — список индексов затронутых звёзд
         private List<int>[] _affectedStarIndices;
 
@@ -36,12 +39,16 @@ namespace LH.Cosmos {
 
         public void Init(CosmosController cosmos, float fieldRadius, List<CosmicBodyData> starDatas) {
             _cosmos = cosmos;
-            _holder = new GameObject("hidden_objects").transform;
+            var sw = Stopwatch.StartNew();
+
+            _holder = new GameObject("hidden").transform;
             _holder.SetParent(cosmos.transform);
 
             var cfg = cosmos.Config;
             GenerateHiddenObjects(cfg.Seed + 7777, cfg.HiddenObjectCount, fieldRadius, starDatas);
             CreateViews(cfg.HiddenObject);
+
+            Debug.Log($"Cosmic hidden ({_datas.Count}) generated in {sw.ElapsedMilliseconds} ms");
         }
 
         private void GenerateHiddenObjects(int seed, int count, float fieldRadius, List<CosmicBodyData> stars) {
