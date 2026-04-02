@@ -179,6 +179,10 @@ PrefabInstance:
       propertyPath: Cursor
       value: 
       objectReference: {fileID: 7896770911473603858}
+    - target: {fileID: 658537888677457927, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
+      propertyPath: CameraMoveParams.DeadZone
+      value: 0.33
+      objectReference: {fileID: 0}
     - target: {fileID: 1928550479330115040, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

@@ -14,6 +14,9 @@ namespace LH.Cosmos {
         private readonly CosmosCamera _cosmosCamera = new();
         private readonly CosmosCursor _cursor = new();
 
+        public Vector2 CursorWorldPos => _cursor.Position;
+        public float CursorActivity => _cursor.Activity;
+
 
         private void Awake() {
             float fieldRadius = Config.FieldRadius;

@@ -14,6 +14,13 @@ namespace LH.Cosmos {
         private const float CLUSTERED_RATIO = 0.75f;
         private const int CLUSTER_COUNT = 7;
 
+        // Фокусировка курсора
+        private const float FOCUS_RADIUS = 300f;
+        private const float FOCUS_SNAP_RADIUS = 30f;
+        private const float FOCUS_FISHEYE_POWER = 0.1f;
+        private const float FOCUS_MAX_SCALE = 7.2f;
+        private const float FOCUS_TRANSITION_SPEED = 4f;
+
         private CosmosController _cosmos;
         private float _fieldRadius;
         private Transform _bodiesHolder;
@@ -88,14 +95,14 @@ namespace LH.Cosmos {
         }
 
         public void Update() {
-            // DO: эта штука должна шевелить звёзды; по сути, плоский упрощённый ецс:
-            //  - воздействие курсора и прочих влияний
-            //  - особые поведения (на этом этапе лучше добавить логический объект тела) 
-            //  - все тела стремятся обратно к якорным позициям
-            //  - применяем новые данные на вьюху (и то, если изменились)
-
             foreach (var data in _datas) {
-                AttractToAnchor(data);
+                AttractToAnchors(data);
+            }
+
+            Vector2 cursorPos = _cosmos.CursorWorldPos;
+            float activity = _cosmos.CursorActivity;
+            foreach (var data in _datas) {
+                ApplyCursorFocus(data, cursorPos, activity);
             }
 
             foreach (var body in _bodies) {
@@ -132,13 +139,48 @@ namespace LH.Cosmos {
             );
         }
 
-        private void AttractToAnchor(CosmicBodyData data) {
+        private static void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity) {
+            if (activity < 0.001f) return;
+
+            Vector2 toBody = data.AnchorPosition - cursorPos;
+            float dist = toBody.magnitude;
+            if (dist >= FOCUS_RADIUS) return;
+
+            float t = dist / FOCUS_RADIUS;
+            float blend = FOCUS_TRANSITION_SPEED * Time.deltaTime * activity;
+
+            // Масштаб: увеличение ближе к центру
+            float scaleFade = (1f - t) * (1f - t);
+            float targetScale = data.AnchorScale * (1f + (FOCUS_MAX_SCALE - 1f) * scaleFade);
+            data.Scale = Mathf.Lerp(data.Scale, targetScale, blend);
+
+            if (dist < 0.001f) {
+                data.Position = Vector2.Lerp(data.Position, cursorPos, blend);
+                return;
+            }
+
+            Vector2 dir = toBody / dist;
+
+            if (dist < FOCUS_SNAP_RADIUS) {
+                float snapT = 1f - dist / FOCUS_SNAP_RADIUS;
+                data.Position = Vector2.Lerp(data.Position, cursorPos, snapT * snapT * 0.8f * blend);
+            } else {
+                float pushZone = FOCUS_RADIUS - FOCUS_SNAP_RADIUS;
+                float pushT = (dist - FOCUS_SNAP_RADIUS) / pushZone;
+                float remapped = Mathf.Pow(pushT, FOCUS_FISHEYE_POWER);
+                float newDist = FOCUS_SNAP_RADIUS + remapped * pushZone;
+                Vector2 fisheyePos = cursorPos + dir * newDist;
+                data.Position = Vector2.Lerp(data.Position, fisheyePos, blend);
+            }
+        }
+
+        private void AttractToAnchors(CosmicBodyData data) {
             float dt = Time.deltaTime;
 
             var delta = data.AnchorPosition - data.Position;
             float distance = delta.magnitude;
 
-            if (distance > .001f) {
+            if (distance > .01f) {
                 float speed = distance * 5.0f;
                 Vector2 shift = delta.normalized * speed * dt;
 
@@ -151,7 +193,14 @@ namespace LH.Cosmos {
                 data.Position = data.AnchorPosition;
             }
 
-            data.Scale = data.AnchorScale;
+            var sizeDelta = data.AnchorScale - data.Scale;
+            if (Mathf.Abs(sizeDelta) > .01f) {
+                float sizeSpeed = sizeDelta * 2f * dt;
+
+                data.Scale += sizeSpeed;
+            } else {
+                data.Scale = data.AnchorScale;
+            }
         }
     }
 }

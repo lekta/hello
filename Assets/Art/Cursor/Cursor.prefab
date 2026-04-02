@@ -4879,7 +4879,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _image: {fileID: 7224617388016754610}
   _linkParticles: {fileID: 7001833838814862866}
-  _worldParticles: {fileID: 0}
+  _worldParticles: {fileID: 3033161375551458239}
 --- !u!1 &6744886594441683415
 GameObject:
   m_ObjectHideFlags: 0
