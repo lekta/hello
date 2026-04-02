@@ -6,6 +6,5 @@ namespace LH.Cosmos {
 
         public Vector2 Position;
         public float Radius;
-        public bool Revealed;
     }
 }

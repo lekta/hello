@@ -6,7 +6,7 @@ namespace LH.Dev {
     [CustomEditor(typeof(HiddenObjectView))]
     public class HiddenObjectView_Inspector : Editor {
         private HiddenObjectView View => (HiddenObjectView)target;
-        
+
         private void OnEnable() {
             SceneView.duringSceneGui += OnSceneGUI;
         }
@@ -20,21 +20,21 @@ namespace LH.Dev {
 
             GUILayout.Space(3);
 
-            var data = View.Data;
-            if (data == null) {
-                GUILayout.Label("No data");
+            var hidden = View.Hidden;
+            if (hidden == null) {
+                GUILayout.Label("No instance");
             } else {
-                GUILayout.Label($"#{data.Index}; revealed {data.Revealed}");
+                GUILayout.Label($"#{hidden.Data.Index}; revealed {hidden.Revealed}");
             }
         }
 
         private void OnSceneGUI(SceneView sceneView) {
             if (Event.current.type != EventType.Repaint)
                 return;
-            
+
             if (View.Data == null)
                 return;
-            
+
             CosmosGizmos.DrawHidden(View.Data);
         }
     }

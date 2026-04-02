@@ -36,7 +36,7 @@ namespace LH.Cosmos {
         private readonly List<CosmicBodyData> _datas = new();
         private readonly List<CosmicBodyView> _bodies = new();
 
-        public List<CosmicBodyData> Datas => _datas;
+        public IReadOnlyList<CosmicBodyData> Datas => _datas;
 
 
         public void Init(CosmosController cosmos, float fieldRadius) {
@@ -48,7 +48,7 @@ namespace LH.Cosmos {
             _bodiesHolder.SetParent(_cosmos.transform);
 
             RecreateBodies();
-            
+
             Debug.Log($"Cosmic bodies ({_datas.Count}) generated in {sw.ElapsedMilliseconds} ms");
         }
 
@@ -119,7 +119,7 @@ namespace LH.Cosmos {
             }
         }
 
-        public void Update() {
+        public void Update(IReadOnlyList<HiddenObject> hiddens) {
             float time = Time.time;
 
             foreach (var data in _datas) {
@@ -130,6 +130,16 @@ namespace LH.Cosmos {
                 ApplyTwinkle(data, time);
             }
 
+            foreach (var hidden in hiddens) {
+                if (hidden.Revealed)
+                    continue;
+
+                foreach (var bodyIdx in hidden.AffectedStars.Keys) {
+                    var data = _datas[bodyIdx];
+                    ApplyHiddenTeasering(data, hidden, time);
+                }
+            }
+
             Vector2 cursorPos = _cosmos.CursorWorldPos;
             float activity = _cosmos.CursorActivity;
             foreach (var data in _datas) {
@@ -137,7 +147,7 @@ namespace LH.Cosmos {
             }
 
             foreach (var body in _bodies) {
-                body.Apply();
+                body.ManualUpdate();
             }
         }
 
@@ -213,6 +223,17 @@ namespace LH.Cosmos {
             float blink = Mathf.Pow(Mathf.Abs(Mathf.Sin(time * data.BlinkSpeed + data.BlinkPhase)), BLINK_SHARPNESS);
             data.Brightness = subtle * blink;
         }
+
+        private void ApplyHiddenTeasering(CosmicBodyData data, HiddenObject hidden, float time) {
+            if (hidden.BlackoutCoef > 0f) {
+                data.Brightness *= 1f - hidden.BlackoutCoef;
+            }
+
+            float tx = Mathf.Sin(time * 11f + data.Index * 2.3f) * hidden.TremorCoef;
+            float ty = Mathf.Sin(time * 9f + data.Index * 3.1f) * hidden.TremorCoef;
+            data.Position += new Vector2(tx, ty);
+        }
+
 
         private static void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity, float time) {
             if (activity < .001f)

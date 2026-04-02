@@ -21,7 +21,7 @@ namespace LH.Cosmos {
             _data = null;
         }
 
-        public void Apply() {
+        public void ManualUpdate() {
             if (_lastPosition != _data.Position) {
                 _lastPosition = _data.Position;
                 transform.localPosition = _lastPosition;

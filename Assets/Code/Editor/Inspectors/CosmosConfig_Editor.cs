@@ -16,6 +16,8 @@ namespace LH.Dev {
         private float _cachedRadius;
         private int _cachedHiddenCount;
 
+        private static bool _showColorsGizmo;
+
 
         private void OnEnable() {
             SceneView.duringSceneGui += OnSceneGUI;
@@ -27,6 +29,10 @@ namespace LH.Dev {
 
         public override void OnInspectorGUI() {
             DrawDefaultInspector();
+            
+            GUILayout.Label("  Gizmos");
+
+            _showColorsGizmo = EditorGUILayout.ToggleLeft("Show color zones", _showColorsGizmo);
 
             if (GUI.changed)
                 SceneView.RepaintAll();
@@ -103,7 +109,7 @@ namespace LH.Dev {
         }
 
         private static void DrawColorZones(ColorZone[] zones) {
-            if (zones == null)
+            if (zones.IsEmpty() || !_showColorsGizmo)
                 return;
 
             for (int i = 0; i < zones.Length; i++) {
@@ -111,10 +117,10 @@ namespace LH.Dev {
                 Vector3 pos = new Vector3(zone.Position.x, zone.Position.y, 0f);
                 Color color = zone.Tint;
 
-                Handles.color = color.WithAlpha(.15f);
+                Handles.color = color.WithAlpha(.1f);
                 Handles.DrawSolidDisc(pos, Vector3.forward, zone.Radius);
 
-                Handles.color = color.WithAlpha(.5f);
+                Handles.color = color.WithAlpha(.4f);
                 Handles.DrawWireDisc(pos, Vector3.forward, zone.Radius);
                 Handles.Label(pos, $"Zone #{i} ({zone.Strength:P0})", EditorStyles.whiteBoldLabel);
             }
