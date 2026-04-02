@@ -183,6 +183,14 @@ PrefabInstance:
       propertyPath: CameraMoveParams.DeadZone
       value: 0.33
       objectReference: {fileID: 0}
+    - target: {fileID: 658537888677457927, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
+      propertyPath: CameraMoveParams.BoundaryOvershoot
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 658537888677457927, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
+      propertyPath: CameraMoveParams.BoundaryStiffness
+      value: 9
+      objectReference: {fileID: 0}
     - target: {fileID: 1928550479330115040, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -222,6 +230,10 @@ PrefabInstance:
     - target: {fileID: 1928550479330115040, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4280530059435408778, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
+      propertyPath: orthographic size
+      value: 500
       objectReference: {fileID: 0}
     - target: {fileID: 6874649090428063604, guid: 4963b21e97dddf143bdb0fdfe31f6516, type: 3}
       propertyPath: m_Name

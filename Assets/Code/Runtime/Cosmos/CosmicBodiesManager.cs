@@ -34,6 +34,8 @@ namespace LH.Cosmos {
         private readonly List<CosmicBodyData> _datas = new();
         private readonly List<CosmicBodyView> _bodies = new();
 
+        public List<CosmicBodyData> Datas => _datas;
+
 
         public void Init(CosmosController cosmos, float fieldRadius) {
             _cosmos = cosmos;

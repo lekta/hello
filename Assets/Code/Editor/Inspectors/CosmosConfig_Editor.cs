@@ -1,16 +1,19 @@
 using System.Collections.Generic;
+using LH.Cosmos;
 using UnityEditor;
 using UnityEngine;
 
-namespace LH.Cosmos {
+namespace LH.Dev {
     [CustomEditor(typeof(CosmosConfig))]
     public class CosmosConfig_Editor : Editor {
         private static Material _glMaterial;
 
         private readonly List<CosmicBodyData> _cachedStars = new();
+        private readonly List<HiddenObjectData> _cachedHidden = new();
         private int _cachedSeed;
         private int _cachedCount;
         private float _cachedRadius;
+        private int _cachedHiddenCount;
 
 
         private void OnEnable() {
@@ -39,6 +42,7 @@ namespace LH.Cosmos {
             DrawFieldBoundary(cfg.FieldRadius);
             EnsureCachedStars(cfg);
             DrawStarsGL();
+            DrawHiddenObjects();
         }
 
         private static void DrawFieldBoundary(float radius) {
@@ -52,14 +56,17 @@ namespace LH.Cosmos {
                 && _cachedCount == cfg.BodyCount
                 && Mathf.Approximately(_cachedRadius, cfg.FieldRadius)
                 && _cachedStars.Count == cfg.BodyCount
+                && _cachedHiddenCount == cfg.HiddenObjectCount
                )
                 return;
 
             _cachedSeed = cfg.Seed;
             _cachedCount = cfg.BodyCount;
             _cachedRadius = cfg.FieldRadius;
+            _cachedHiddenCount = cfg.HiddenObjectCount;
 
             CosmicBodiesManager.GenerateField(cfg.Seed, cfg.BodyCount, cfg.FieldRadius, _cachedStars);
+            HiddenObjectsManager.GenerateField(cfg.Seed, cfg.HiddenObjectCount, cfg.FieldRadius, _cachedStars, _cachedHidden);
         }
 
         private void DrawStarsGL() {
@@ -91,6 +98,15 @@ namespace LH.Cosmos {
 
             GL.End();
             GL.PopMatrix();
+        }
+
+        private void DrawHiddenObjects() {
+            if (_cachedHidden.Count == 0)
+                return;
+
+            for (int i = 0; i < _cachedHidden.Count; i++) {
+                CosmosGizmos.DrawHidden(_cachedHidden[i]);
+            }
         }
 
         private static Material GetGLMaterial() {

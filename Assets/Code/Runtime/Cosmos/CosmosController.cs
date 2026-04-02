@@ -11,17 +11,20 @@ namespace LH.Cosmos {
         public Transform Background;
 
         private readonly CosmicBodiesManager _bodies = new();
+        private readonly HiddenObjectsManager _hiddenObjects = new();
         private readonly CosmosCamera _cosmosCamera = new();
         private readonly CosmosCursor _cursor = new();
 
         public Vector2 CursorWorldPos => _cursor.Position;
         public float CursorActivity => _cursor.Activity;
+        public CursorState CursorState => _cursor.State;
 
 
         private void Awake() {
             float fieldRadius = Config.FieldRadius;
 
             _bodies.Init(this, fieldRadius);
+            _hiddenObjects.Init(this, fieldRadius, _bodies.Datas);
             _cursor.Init(this);
             _cosmosCamera.Init(Camera, Background, _cursor, fieldRadius, CameraMoveParams);
         }
@@ -30,6 +33,7 @@ namespace LH.Cosmos {
             _cursor.Update();
             _cosmosCamera.Update();
             _bodies.Update();
+            _hiddenObjects.Update(_bodies.Datas);
         }
     }
 
