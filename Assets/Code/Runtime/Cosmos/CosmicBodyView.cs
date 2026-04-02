@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using LH.Domain;
+using UnityEngine;
 
 namespace LH.Cosmos {
     public class CosmicBodyView : MonoBehaviour {
@@ -11,12 +12,13 @@ namespace LH.Cosmos {
 
         public void Setup(CosmicBodyData data) {
             _data = data;
-
+            _image.color = data.Color;
             gameObject.SetActive(true);
         }
 
         public void TurnOff() {
             gameObject.SetActive(false);
+            _data = null;
         }
 
         public void Apply() {
@@ -28,6 +30,8 @@ namespace LH.Cosmos {
                 _lastScale = _data.Scale;
                 transform.localScale = Vector3.one * _lastScale;
             }
+
+            _image.color = (_data.Color * _data.Brightness).WithAlpha(1f);
         }
     }
 }

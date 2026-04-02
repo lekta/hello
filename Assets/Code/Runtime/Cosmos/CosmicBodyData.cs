@@ -6,11 +6,21 @@ namespace LH.Cosmos {
 
         public Vector2 AnchorPosition;
         public Vector2 Position;
-        // ? public Vector2 Velocity;
 
         public float AnchorScale;
         public float Scale;
 
-        // DO: надо ещё задать какую-то функцию "мерцания" и пару констант, чтобы чисто на них+время генерить микроотклонения
+        // Визуал
+        public Color Color;
+        public float Brightness = 1f;
+
+        // Мерцание (генерируются по сиду)
+        public float TwinkleSpeed;
+        public float TwinklePhase;
+        public float BlinkSpeed;
+        public float BlinkPhase;
+
+        // Дрожь при фокусе (0..1, генерируется по сиду)
+        public float TremorSensitivity;
     }
 }

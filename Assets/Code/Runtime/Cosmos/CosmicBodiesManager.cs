@@ -14,6 +14,13 @@ namespace LH.Cosmos {
         private const float CLUSTERED_RATIO = 0.75f;
         private const int CLUSTER_COUNT = 7;
 
+        // Мерцание
+        private const float TWINKLE_SUBTLE = 0.05f;
+        private const float BLINK_SHARPNESS = 0.1f;
+
+        // Дрожь при фокусе
+        private const float TREMOR_AMPLITUDE = .3f;
+
         // Фокусировка курсора
         private const float FOCUS_RADIUS = 300f;
         private const float FOCUS_SNAP_RADIUS = 30f;
@@ -76,6 +83,17 @@ namespace LH.Cosmos {
                     AnchorScale = scale,
                 });
             }
+
+            // После позиции/размера — визуал и поведение (порядок rng важен)
+            for (int i = 0; i < count; i++) {
+                var data = outDatas[i];
+                data.Color = NextStarColor(rng, data.Scale);
+                data.TwinkleSpeed = 2f + (float)rng.NextDouble() * 3f;
+                data.TwinklePhase = (float)(rng.NextDouble() * Math.PI * 2.0);
+                data.BlinkSpeed = 0.3f + (float)rng.NextDouble() * 0.5f;
+                data.BlinkPhase = (float)(rng.NextDouble() * Math.PI * 2.0);
+                data.TremorSensitivity = (float)rng.NextDouble();
+            }
         }
 
         private static Vector2 NextStarPosition(Random rng, float radius, Vector2[] clusterCenters) {
@@ -95,19 +113,40 @@ namespace LH.Cosmos {
         }
 
         public void Update() {
+            float time = Time.time;
+
             foreach (var data in _datas) {
                 AttractToAnchors(data);
+            }
+
+            foreach (var data in _datas) {
+                ApplyTwinkle(data, time);
             }
 
             Vector2 cursorPos = _cosmos.CursorWorldPos;
             float activity = _cosmos.CursorActivity;
             foreach (var data in _datas) {
-                ApplyCursorFocus(data, cursorPos, activity);
+                ApplyCursorFocus(data, cursorPos, activity, time);
             }
 
             foreach (var body in _bodies) {
                 body.Apply();
             }
+        }
+
+        // Цвет звезды — коррелирует с размером (крупные горячее → голубее)
+        private static Color NextStarColor(Random rng, float scale) {
+            float temperature = Mathf.Clamp01(scale / 13f + (float)rng.NextDouble() * 0.3f);
+            if (temperature < 0.3f) {
+                float t = temperature / 0.3f;
+                return Color.Lerp(new Color(1f, 0.6f, 0.35f), new Color(1f, 0.85f, 0.6f), t);
+            }
+            if (temperature < 0.6f) {
+                float t = (temperature - 0.3f) / 0.3f;
+                return Color.Lerp(new Color(1f, 0.85f, 0.6f), new Color(1f, 0.97f, 0.9f), t);
+            }
+            float tHot = (temperature - 0.6f) / 0.4f;
+            return Color.Lerp(new Color(1f, 0.97f, 0.9f), new Color(0.75f, 0.85f, 1f), tHot);
         }
 
         // Три группы: 55% мелкие (2–4), 35% средние (4–9), 10% яркие (9–13)
@@ -139,12 +178,20 @@ namespace LH.Cosmos {
             );
         }
 
-        private static void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity) {
-            if (activity < 0.001f) return;
+        private static void ApplyTwinkle(CosmicBodyData data, float time) {
+            float subtle = 1f - TWINKLE_SUBTLE * Mathf.Sin(time * data.TwinkleSpeed + data.TwinklePhase);
+            float blink = Mathf.Pow(Mathf.Abs(Mathf.Sin(time * data.BlinkSpeed + data.BlinkPhase)), BLINK_SHARPNESS);
+            data.Brightness = subtle * blink;
+        }
+
+        private static void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity, float time) {
+            if (activity < 0.001f)
+                return;
 
             Vector2 toBody = data.AnchorPosition - cursorPos;
             float dist = toBody.magnitude;
-            if (dist >= FOCUS_RADIUS) return;
+            if (dist >= FOCUS_RADIUS)
+                return;
 
             float t = dist / FOCUS_RADIUS;
             float blend = FOCUS_TRANSITION_SPEED * Time.deltaTime * activity;
@@ -172,6 +219,12 @@ namespace LH.Cosmos {
                 Vector2 fisheyePos = cursorPos + dir * newDist;
                 data.Position = Vector2.Lerp(data.Position, fisheyePos, blend);
             }
+
+            // Дрожь: усиливается ближе к центру фокуса, зависит от чувствительности тела
+            float tremorStrength = data.TremorSensitivity * activity * (1f - t) * TREMOR_AMPLITUDE;
+            float tx = Mathf.Sin(time * (170f - 153f * t) + data.TwinklePhase * 3.7f) * tremorStrength;
+            float ty = Mathf.Sin(time * (130f - 117f * t) + data.BlinkPhase * 2.3f) * tremorStrength;
+            data.Position += new Vector2(tx, ty);
         }
 
         private void AttractToAnchors(CosmicBodyData data) {
