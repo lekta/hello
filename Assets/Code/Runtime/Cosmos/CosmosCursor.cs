@@ -1,3 +1,5 @@
+using LH.Api;
+using LH.Domain;
 using UnityEngine;
 
 namespace LH.Cosmos {
@@ -5,6 +7,8 @@ namespace LH.Cosmos {
         private const float IDLE_DELAY = 2f;
         private const float IDLE_FADE = 3f;
         private const float RECOVER_TIME = 1f;
+
+        private static IInput Input => GameContext.Input;
 
         private Camera _camera;
         private CursorView _view;
@@ -27,16 +31,16 @@ namespace LH.Cosmos {
         }
 
         public void Update() {
-            Position = _camera.ScreenToWorldPoint(_input.ScreenPosition);
+            Position = _camera.ScreenToWorldPoint(Input.ScreenPosition);
             UpdateState();
             UpdateActivity();
             _prevPosition = Position;
         }
 
         private void UpdateState() {
-            if (_input.ActionDown)
+            if (Input.ActionDown)
                 State = CursorState.Focus;
-            else if (_input.ActionUp)
+            else if (Input.ActionUp)
                 State = CursorState.Idle;
         }
 

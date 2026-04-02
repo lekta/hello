@@ -5,15 +5,17 @@ namespace LH.Cosmos {
         private CameraMoveParams _params;
         private Camera _camera;
         private Transform _background;
+        private CosmosCursor _cursor;
 
         private float _fieldRadius;
         private Vector2 _velocity;
         private Vector2 _bgHalfSize;
 
 
-        public void Init(Camera camera, Transform background, float fieldRadius, CameraMoveParams moveParams) {
+        public void Init(Camera camera, Transform background, CosmosCursor cursor, float fieldRadius, CameraMoveParams moveParams) {
             _camera = camera;
             _background = background;
+            _cursor = cursor;
             _fieldRadius = fieldRadius;
             _params = moveParams;
 
@@ -56,16 +58,10 @@ namespace LH.Cosmos {
             float dt = Time.deltaTime;
             float maxSpeed = screenWidth * _params.ScrollSpeed;
 
-            // Позиция мыши относительно центра экрана, нормализована к [-1, 1]
-            Vector2 mouse = Input.mousePosition;
-            Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
-            Vector2 offset = (mouse - screenCenter) / screenCenter;
-
-            if (offset.magnitude > 1f)
-                offset = offset.normalized;
-
-            // Мёртвая зона → скорость нарастает до макс. на заданной зоне
+            Vector2 raw = _cursor.Position - (Vector2)_camera.transform.position;
+            Vector2 offset = new Vector2(raw.x / (_camera.orthographicSize * _camera.aspect), raw.y / _camera.orthographicSize);
             float mag = offset.magnitude;
+
             Vector2 targetVel = Vector2.zero;
             if (mag > _params.DeadZone) {
                 float t = Mathf.Clamp01((mag - _params.DeadZone) / (_params.MaxSpeedZone - _params.DeadZone));

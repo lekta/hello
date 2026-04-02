@@ -22,13 +22,13 @@ namespace LH.Cosmos {
             float fieldRadius = Config.FieldRadius;
 
             _bodies.Init(this, fieldRadius);
-            _cosmosCamera.Init(Camera, Background, fieldRadius, CameraMoveParams);
             _cursor.Init(this);
+            _cosmosCamera.Init(Camera, Background, _cursor, fieldRadius, CameraMoveParams);
         }
 
         private void Update() {
-            _cosmosCamera.Update();
             _cursor.Update();
+            _cosmosCamera.Update();
             _bodies.Update();
         }
     }
