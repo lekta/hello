@@ -31,10 +31,25 @@ namespace LH.Cosmos {
         }
 
         public void Update() {
+            if (!IsScreenFocused()) {
+                Position = _camera.transform.position;
+                _idleTime += Time.deltaTime;
+                if (_idleTime > IDLE_DELAY)
+                    Activity = Mathf.MoveTowards(Activity, 0f, Time.deltaTime / IDLE_FADE);
+                _prevPosition = Position;
+                return;
+            }
+
             Position = _camera.ScreenToWorldPoint(Input.ScreenPosition);
             UpdateState();
             UpdateActivity();
             _prevPosition = Position;
+        }
+
+        private bool IsScreenFocused() {
+            if (!Application.isFocused) return false;
+            Vector2 sp = Input.ScreenPosition;
+            return sp.x >= 0f && sp.x <= Screen.width && sp.y >= 0f && sp.y <= Screen.height;
         }
 
         private void UpdateState() {

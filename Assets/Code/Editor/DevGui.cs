@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
 namespace LH.Dev {
     public static partial class DevGui {
@@ -34,5 +35,11 @@ namespace LH.Dev {
             return _tempContent;
         }
 
+        public static void HorizontalLine(int height = 1, int padding = 0) {
+            Rect rect = EditorGUILayout.GetControlRect(false, GUILayout.Height(padding + height));
+            rect.height = height;
+            rect.y += padding * 0.5f;
+            EditorGUI.DrawRect(rect, new Color(.5f, .5f, .5f, 1));
+        }
     }
 }

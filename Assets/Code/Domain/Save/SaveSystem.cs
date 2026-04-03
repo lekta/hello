@@ -9,7 +9,7 @@ using Debug = UnityEngine.Debug;
 namespace LH.Save {
     public class SaveSystem : ISaveSystem, IUpdatable {
         private const float AUTOSAVE_DURATION = .5f;
-        private static readonly string _savePath = Path.Combine(Application.persistentDataPath, "save.json");
+        public static readonly string SavePath = Path.Combine(Application.persistentDataPath, "save.json");
 
         private GameSave _data;
 
@@ -56,7 +56,7 @@ namespace LH.Save {
 
 
         private void LoadOrCreate() {
-            if (File.Exists(_savePath)) {
+            if (File.Exists(SavePath)) {
                 Load();
             }
             _data ??= new GameSave();
@@ -64,12 +64,12 @@ namespace LH.Save {
 
         private void Load() {
             try {
-                string json = File.ReadAllText(_savePath);
+                string json = File.ReadAllText(SavePath);
                 _data = JsonUtility.FromJson<GameSave>(json);
 
                 Debug.Log($"Loaded {_data}");
             } catch (Exception ex) {
-                Debug.LogError($"Can't read save from {_savePath}; {ex.Message}\n{ex.StackTrace}");
+                Debug.LogError($"Can't read save from {SavePath}; {ex.Message}\n{ex.StackTrace}");
             }
         }
 
@@ -87,7 +87,7 @@ namespace LH.Save {
 
             try {
                 string json = JsonUtility.ToJson(_data, true);
-                File.WriteAllText(_savePath, json);
+                File.WriteAllText(SavePath, json);
 
                 Debug.Log($"Save written in {sw.ElapsedMilliseconds} ms");
             } catch (Exception ex) {

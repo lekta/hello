@@ -14,5 +14,9 @@ namespace LH.Domain {
 
         [ContractAnnotation("list:null => true")]
         public static bool IsEmpty<T>(this IReadOnlyList<T> list) => list == null || list.Count == 0;
+
+        public static T GetAtOrDefault<T>(this IReadOnlyList<T> list, int index) {
+            return list == null || index >= list.Count || index < 0 ? default : list[index];
+        }
     }
 }
