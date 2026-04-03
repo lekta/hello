@@ -5,33 +5,47 @@ namespace LH.Cosmos {
     public class StarView : MonoBehaviour {
         [SerializeField] private SpriteRenderer _image;
 
-        private StarData _data;
-        private Vector2 _lastPosition;
+        private Star _star;
+
+        public Vector2 LastPosition { get; private set; }
         private float _lastScale;
+        private Color _baseColor;
+        private float _lastBrightness = -1f;
 
 
-        public void Setup(StarData data) {
-            _data = data;
-            _image.color = data.Color;
+        public void Setup(Star star) {
+            _star = star;
+
+            var color = star.Data.Color;
+            _baseColor = color;
+            _image.color = color;
+
+            Apply();
             gameObject.SetActive(true);
         }
 
         public void TurnOff() {
             gameObject.SetActive(false);
-            _data = null;
         }
 
-        public void ManualUpdate() {
-            if (_lastPosition != _data.Position) {
-                _lastPosition = _data.Position;
-                transform.localPosition = _lastPosition;
+        public void Apply() {
+            var position = _star.Position;
+            if (LastPosition != position) {
+                LastPosition = position;
+                transform.localPosition = LastPosition;
             }
-            if (_lastScale != _data.Scale) {
-                _lastScale = _data.Scale;
+
+            var scale = _star.Scale;
+            if (_lastScale != scale) {
+                _lastScale = scale;
                 transform.localScale = Vector3.one * _lastScale;
             }
 
-            _image.color = (_data.Color * _data.Brightness).WithAlpha(1f);
+            var brightness = _star.Brightness;
+            if (_lastBrightness != brightness) {
+                _lastBrightness = brightness;
+                _image.color = (_baseColor * brightness).WithAlpha(1f);
+            }
         }
     }
 }

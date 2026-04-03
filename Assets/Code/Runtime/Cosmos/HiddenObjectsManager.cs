@@ -11,7 +11,7 @@ namespace LH.Cosmos {
     public class HiddenObjectsManager {
         private CosmosController _cosmos;
         private Transform _holder;
-        
+
         private readonly List<HiddenObject> _hiddens = new();
         public IReadOnlyList<HiddenObject> Hiddens => _hiddens;
 
@@ -24,6 +24,7 @@ namespace LH.Cosmos {
 
             _holder = new GameObject("hidden").transform;
             _holder.SetParent(cosmos.transform);
+            _holder.position = new Vector3(0, 0, 500);
 
             var cfg = cosmos.Config;
             GenerateHiddenObjects(cfg.Seed + 7777, cfg.HiddenObjectCount, fieldRadius, starDatas);
@@ -35,7 +36,6 @@ namespace LH.Cosmos {
         private void GenerateHiddenObjects(int seed, int count, float fieldRadius, IReadOnlyList<StarData> stars) {
             _hiddens.Clear();
             var rng = new Random(seed);
-
 
             for (int i = 0; i < count; i++) {
                 var hidden = PlaceHiddenObject(rng, fieldRadius, stars, i);
@@ -58,7 +58,7 @@ namespace LH.Cosmos {
                 float teaserRadius = 80f + (float)rng.NextDouble() * 120f;
 
                 var affected = stars
-                    .Select(s => (s.Index, Dist: (s.AnchorPosition - pos).magnitude))
+                    .Select(s => (s.Index, Dist : (s.AnchorPosition - pos).magnitude))
                     .Where(t => t.Dist < teaserRadius)
                     .ToList();
 

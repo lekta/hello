@@ -1,18 +1,12 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace LH.Cosmos {
     public class StarData {
         public int Index;
-
         public Vector2 AnchorPosition;
-        public Vector2 Position;
-
         public float AnchorScale;
-        public float Scale;
 
-        // Визуал
         public Color Color;
-        public float Brightness = 1f;
 
         // Мерцание (генерируются по сиду)
         public float TwinkleSpeed;
@@ -20,7 +14,7 @@ namespace LH.Cosmos {
         public float BlinkSpeed;
         public float BlinkPhase;
 
-        // Дрожь при фокусе (0..1, генерируется по сиду)
+        // Дрожь при фокусе (0..1)
         public float TremorSensitivity;
     }
 }

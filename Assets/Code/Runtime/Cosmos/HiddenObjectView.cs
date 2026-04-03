@@ -13,25 +13,34 @@ namespace LH.Cosmos {
 
         public void Setup(HiddenObject hidden) {
             Hidden = hidden;
-            _wasRevealed = false;
+            _wasRevealed = hidden.Revealed;
 
-            transform.position = Data.Position;
+            transform.localPosition = Data.Position;
 
             var teaserShape = _teaserParticles.shape;
             teaserShape.radius = Data.Radius;
 
-            _image.gameObject.SetActive(false);
+            RefreshState();
         }
 
         public void UpdateManual() {
             if (Hidden.Revealed && !_wasRevealed) {
                 _wasRevealed = true;
 
-                _teaserParticles.Stop();
-                _image.gameObject.SetActive(true);
+                RefreshState();
             }
 
             // DO: добавить вращение наверно, и пусть его тоже трясёт нахуй
+        }
+
+        private void RefreshState() {
+            if (_wasRevealed) {
+                _teaserParticles.Stop();
+                _image.gameObject.SetActive(true);
+            } else {
+                _teaserParticles.Play();
+                _image.gameObject.SetActive(false);
+            }
         }
     }
 }
