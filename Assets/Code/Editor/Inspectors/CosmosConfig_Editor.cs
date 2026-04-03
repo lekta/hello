@@ -73,7 +73,7 @@ namespace LH.Dev {
             _cachedRadius = cfg.FieldRadius;
             _cachedHiddenCount = cfg.HiddenObjectCount;
 
-            CosmicBodiesManager.GenerateField(cfg.Seed, cfg.BodyCount, cfg.FieldRadius, _cachedStars, cfg.ColorZones);
+            CosmicBodiesManager.GenerateField(cfg.Seed, cfg.BodyCount, cfg.FieldRadius, _cachedStars, cfg.StarsParams, cfg.ColorZones);
             HiddenObjectsManager.GenerateField(cfg.Seed, cfg.HiddenObjectCount, cfg.FieldRadius, _cachedStars, _cachedHidden);
         }
 

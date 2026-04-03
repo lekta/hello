@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace LH.Cosmos {
@@ -13,6 +13,8 @@ namespace LH.Cosmos {
         public int HiddenObjectCount = 7;
 
         public float FieldRadius = 3000f;
+
+        public StarsCreationParams StarsParams = new();
 
         [Header("Цветовые зоны")]
         public ColorZone[] ColorZones = {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
@@ -8,29 +8,9 @@ using Random = System.Random;
 
 namespace LH.Cosmos {
     public class CosmicBodiesManager {
-        // DO: размеры звёзд и вероятности в конфиг
-        private const float SMALL_STAR_RATIO = .55f;  // тусклые
-        private const float MEDIUM_STAR_RATIO = .35f; // средние
-
-        // Доля звёзд в кластерах vs случайный фон
-        private const float CLUSTERED_RATIO = .75f;
-        private const int CLUSTER_COUNT = 7;
-
-        // Мерцание
-        private const float TWINKLE_SUBTLE = .05f;
-        private const float BLINK_SHARPNESS = .1f;
-
-        // Дрожь при фокусе
-        private const float TREMOR_AMPLITUDE = .3f;
-
-        // Фокусировка курсора
-        private const float FOCUS_RADIUS = 300f;
-        private const float FOCUS_SNAP_RADIUS = 30f;
-        private const float FOCUS_FISHEYE_POWER = .1f;
-        private const float FOCUS_MAX_SCALE = 7.2f;
-        private const float FOCUS_TRANSITION_SPEED = 4f;
-
         private CosmosController _cosmos;
+        private StarsCreationParams _starsParams;
+
         private float _fieldRadius;
         private Transform _bodiesHolder;
         private readonly List<CosmicBodyData> _datas = new();
@@ -41,6 +21,7 @@ namespace LH.Cosmos {
 
         public void Init(CosmosController cosmos, float fieldRadius) {
             _cosmos = cosmos;
+            _starsParams = cosmos.Config.StarsParams;
             _fieldRadius = fieldRadius;
             var sw = Stopwatch.StartNew();
 
@@ -64,25 +45,25 @@ namespace LH.Cosmos {
                 _bodies.Add(body);
             }
 
-            GenerateField(cfg.Seed, cfg.BodyCount, _fieldRadius, _datas, cfg.ColorZones);
+            GenerateField(cfg.Seed, cfg.BodyCount, _fieldRadius, _datas, _starsParams, cfg.ColorZones);
 
             for (int i = 0; i < _datas.Count; i++) {
                 _bodies[i].Setup(_datas[i]);
             }
         }
 
-        public static void GenerateField(int seed, int count, float radius, List<CosmicBodyData> outDatas, ColorZone[] colorZones = null) {
+        public static void GenerateField(int seed, int count, float radius, List<CosmicBodyData> outDatas, StarsCreationParams stars, ColorZone[] colorZones = null) {
             outDatas.Clear();
             var rng = new Random(seed);
 
-            var clusterCenters = new Vector2[CLUSTER_COUNT];
-            for (int i = 0; i < CLUSTER_COUNT; i++) {
+            var clusterCenters = new Vector2[stars.ClusterCount];
+            for (int i = 0; i < stars.ClusterCount; i++) {
                 clusterCenters[i] = RandomInDisc(rng, radius * .8f);
             }
 
             for (int i = 0; i < count; i++) {
-                Vector2 pos = NextStarPosition(rng, radius, clusterCenters);
-                float scale = NextStarScale(rng);
+                Vector2 pos = NextStarPosition(rng, radius, clusterCenters, stars);
+                float scale = stars.RandomSize(rng);
 
                 outDatas.Add(new CosmicBodyData {
                     Index = i,
@@ -94,18 +75,18 @@ namespace LH.Cosmos {
             // После позиции/размера — визуал и поведение (порядок rng важен)
             for (int i = 0; i < count; i++) {
                 var data = outDatas[i];
-                data.Color = NextStarColor(rng, data.AnchorScale, data.AnchorPosition, colorZones);
-                data.TwinkleSpeed = 2f + (float)rng.NextDouble() * 3f;
+                data.Color = NextStarColor(rng, data.AnchorScale, data.AnchorPosition, stars, colorZones);
+                data.TwinkleSpeed = stars.TwinkleSpeedRange.x + (float)rng.NextDouble() * (stars.TwinkleSpeedRange.y - stars.TwinkleSpeedRange.x);
                 data.TwinklePhase = (float)(rng.NextDouble() * Math.PI * 2.0);
-                data.BlinkSpeed = .3f + (float)rng.NextDouble() * .5f;
+                data.BlinkSpeed = stars.BlinkSpeedRange.x + (float)rng.NextDouble() * (stars.BlinkSpeedRange.y - stars.BlinkSpeedRange.x);
                 data.BlinkPhase = (float)(rng.NextDouble() * Math.PI * 2.0);
                 data.TremorSensitivity = (float)rng.NextDouble();
             }
         }
 
-        private static Vector2 NextStarPosition(Random rng, float radius, Vector2[] clusterCenters) {
-            if (rng.NextDouble() < CLUSTERED_RATIO) {
-                var center = clusterCenters[rng.Next(CLUSTER_COUNT)];
+        private static Vector2 NextStarPosition(Random rng, float radius, Vector2[] clusterCenters, StarsCreationParams stars) {
+            if (rng.NextDouble() < stars.ClusteredRatio) {
+                var center = clusterCenters[rng.Next(stars.ClusterCount)];
                 Vector2 offset = RandomGaussian2D(rng) * (radius * .18f);
                 Vector2 pos = center + offset;
 
@@ -151,28 +132,10 @@ namespace LH.Cosmos {
             }
         }
 
-        // Цвет звезды — коррелирует с размером, сдвинут в холодную сторону, модулируется зонами
-        private static Color NextStarColor(Random rng, float scale, Vector2 position, ColorZone[] zones) {
-            // temperature 0=холодная, 1=горячая; мелкие звёзды преимущественно холодные
-            float temperature = Mathf.Clamp01(scale / 16f + (float)rng.NextDouble() * .25f);
+        private static Color NextStarColor(Random rng, float scale, Vector2 position, StarsCreationParams stars, ColorZone[] zones) {
+            float temperature = Mathf.Clamp01(scale / stars.TemperatureScaleDivisor + (float)rng.NextDouble() * stars.TemperatureRandomness);
+            Color baseColor = stars.TemperatureGradient.Evaluate(temperature);
 
-            // DO: эти все параметры в конфиг
-            Color baseColor;
-            if (temperature < .4f) {
-                // Холодные: голубовато-белые → белые
-                float t = temperature / .4f;
-                baseColor = Color.Lerp(new Color(.7f, .8f, 1f), new Color(.85f, .9f, 1f), t);
-            } else if (temperature < .7f) {
-                // Средние: белые → тёплые белые
-                float t = (temperature - .4f) / .3f;
-                baseColor = Color.Lerp(new Color(.85f, .9f, 1f), new Color(1f, .95f, .85f), t);
-            } else {
-                // Горячие/крупные: тёплые белые → желтоватые/оранжевые
-                float t = (temperature - .7f) / .3f;
-                baseColor = Color.Lerp(new Color(1f, .95f, .85f), new Color(1f, .75f, .5f), t);
-            }
-
-            // Модуляция цветовыми зонами
             if (zones != null) {
                 for (int z = 0; z < zones.Length; z++) {
                     var zone = zones[z];
@@ -187,16 +150,6 @@ namespace LH.Cosmos {
             }
 
             return baseColor;
-        }
-
-        // Три группы: 55% мелкие (2–4), 35% средние (4–9), 10% яркие (9–13)
-        private static float NextStarScale(Random rng) {
-            double roll = rng.NextDouble();
-            if (roll < SMALL_STAR_RATIO)
-                return 2f + (float)(rng.NextDouble() * 2);
-            if (roll < SMALL_STAR_RATIO + MEDIUM_STAR_RATIO)
-                return 4f + (float)(rng.NextDouble() * 5);
-            return 9f + (float)(rng.NextDouble() * 4);
         }
 
         // Равномерная точка внутри диска: sqrt компенсирует смещение к центру
@@ -218,9 +171,9 @@ namespace LH.Cosmos {
             );
         }
 
-        private static void ApplyTwinkle(CosmicBodyData data, float time) {
-            float subtle = 1f - TWINKLE_SUBTLE * Mathf.Sin(time * data.TwinkleSpeed + data.TwinklePhase);
-            float blink = Mathf.Pow(Mathf.Abs(Mathf.Sin(time * data.BlinkSpeed + data.BlinkPhase)), BLINK_SHARPNESS);
+        private void ApplyTwinkle(CosmicBodyData data, float time) {
+            float subtle = 1f - _starsParams.TwinkleSubtle * Mathf.Sin(time * data.TwinkleSpeed + data.TwinklePhase);
+            float blink = Mathf.Pow(Mathf.Abs(Mathf.Sin(time * data.BlinkSpeed + data.BlinkPhase)), _starsParams.BlinkSharpness);
             data.Brightness = subtle * blink;
         }
 
@@ -236,21 +189,21 @@ namespace LH.Cosmos {
         }
 
 
-        private static void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity, float time) {
+        private void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity, float time) {
             if (activity < .001f)
                 return;
 
             Vector2 toBody = data.AnchorPosition - cursorPos;
             float dist = toBody.magnitude;
-            if (dist >= FOCUS_RADIUS)
+            if (dist >= _starsParams.FocusRadius)
                 return;
 
-            float t = dist / FOCUS_RADIUS;
-            float blend = FOCUS_TRANSITION_SPEED * Time.deltaTime * activity;
+            float t = dist / _starsParams.FocusRadius;
+            float blend = _starsParams.FocusTransitionSpeed * Time.deltaTime * activity;
 
             // Масштаб: увеличение ближе к центру
             float scaleFade = (1f - t) * (1f - t);
-            float targetScale = data.AnchorScale * (1f + (FOCUS_MAX_SCALE - 1f) * scaleFade);
+            float targetScale = data.AnchorScale * (1f + (_starsParams.FocusMaxScale - 1f) * scaleFade);
             data.Scale = Mathf.Lerp(data.Scale, targetScale, blend);
 
             if (dist < .001f) {
@@ -260,20 +213,20 @@ namespace LH.Cosmos {
 
             Vector2 dir = toBody / dist;
 
-            if (dist < FOCUS_SNAP_RADIUS) {
-                float snapT = 1f - dist / FOCUS_SNAP_RADIUS;
+            if (dist < _starsParams.FocusSnapRadius) {
+                float snapT = 1f - dist / _starsParams.FocusSnapRadius;
                 data.Position = Vector2.Lerp(data.Position, cursorPos, snapT * snapT * .8f * blend);
             } else {
-                float pushZone = FOCUS_RADIUS - FOCUS_SNAP_RADIUS;
-                float pushT = (dist - FOCUS_SNAP_RADIUS) / pushZone;
-                float remapped = Mathf.Pow(pushT, FOCUS_FISHEYE_POWER);
-                float newDist = FOCUS_SNAP_RADIUS + remapped * pushZone;
+                float pushZone = _starsParams.FocusRadius - _starsParams.FocusSnapRadius;
+                float pushT = (dist - _starsParams.FocusSnapRadius) / pushZone;
+                float remapped = Mathf.Pow(pushT, _starsParams.FocusFisheyePower);
+                float newDist = _starsParams.FocusSnapRadius + remapped * pushZone;
                 Vector2 fisheyePos = cursorPos + dir * newDist;
                 data.Position = Vector2.Lerp(data.Position, fisheyePos, blend);
             }
 
             // Дрожь: усиливается ближе к центру фокуса, зависит от чувствительности тела
-            float tremorStrength = data.TremorSensitivity * activity * (1f - t) * TREMOR_AMPLITUDE;
+            float tremorStrength = data.TremorSensitivity * activity * (1f - t) * _starsParams.TremorAmplitude;
             float tx = Mathf.Sin(time * (170f - 153f * t) + data.TwinklePhase * 3.7f) * tremorStrength;
             float ty = Mathf.Sin(time * (130f - 117f * t) + data.BlinkPhase * 2.3f) * tremorStrength;
             data.Position += new Vector2(tx, ty);

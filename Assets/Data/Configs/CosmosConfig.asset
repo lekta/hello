@@ -18,3 +18,66 @@ MonoBehaviour:
   BodyCount: 920
   HiddenObjectCount: 7
   FieldRadius: 2500
+  StarsParams:
+    SmallRatio: 0.55
+    MediumRatio: 0.35
+    SmallSize: {x: 2, y: 4}
+    MediumSize: {x: 4, y: 9}
+    LargeSize: {x: 9, y: 14}
+    ClusteredRatio: 0.75
+    ClusterCount: 7
+    TwinkleSubtle: 0.05
+    BlinkSharpness: 0.1
+    TwinkleSpeedRange: {x: 2, y: 5}
+    BlinkSpeedRange: {x: 0.3, y: 0.8}
+    TremorAmplitude: 0.3
+    FocusRadius: 300
+    FocusSnapRadius: 30
+    FocusFisheyePower: 0.1
+    FocusMaxScale: 7.2
+    FocusTransitionSpeed: 4
+    TemperatureGradient:
+      serializedVersion: 2
+      key0: {r: 0.7, g: 0.8, b: 1, a: 1}
+      key1: {r: 0.85, g: 0.9, b: 1, a: 1}
+      key2: {r: 1, g: 0.95, b: 0.85, a: 0}
+      key3: {r: 1, g: 0.75, b: 0.5, a: 0}
+      key4: {r: 0, g: 0, b: 0, a: 0}
+      key5: {r: 0, g: 0, b: 0, a: 0}
+      key6: {r: 0, g: 0, b: 0, a: 0}
+      key7: {r: 0, g: 0, b: 0, a: 0}
+      ctime0: 0
+      ctime1: 26214
+      ctime2: 45875
+      ctime3: 65535
+      ctime4: 0
+      ctime5: 0
+      ctime6: 0
+      ctime7: 0
+      atime0: 0
+      atime1: 65535
+      atime2: 0
+      atime3: 0
+      atime4: 0
+      atime5: 0
+      atime6: 0
+      atime7: 0
+      m_Mode: 0
+      m_ColorSpace: -1
+      m_NumColorKeys: 4
+      m_NumAlphaKeys: 2
+    TemperatureScaleDivisor: 16
+    TemperatureRandomness: 0.25
+  ColorZones:
+  - Position: {x: -800, y: 400}
+    Radius: 1200
+    Strength: 0.5
+    Tint: {r: 0.6, g: 0.7, b: 1, a: 1}
+  - Position: {x: 600, y: -500}
+    Radius: 1000
+    Strength: 0.4
+    Tint: {r: 0.85, g: 0.6, b: 1, a: 1}
+  - Position: {x: 200, y: 800}
+    Radius: 900
+    Strength: 0.35
+    Tint: {r: 0.5, g: 0.9, b: 0.8, a: 1}

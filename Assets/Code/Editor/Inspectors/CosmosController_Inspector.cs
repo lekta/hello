@@ -46,7 +46,7 @@ namespace LH.Dev {
                 return;
 
             var cam = Controller.Camera;
-            var camParam = Controller.CameraMoveParams;
+            var camParam = Controller.CameraConfig.Move;
             float screenWidth = cam.orthographicSize * 2f * cam.aspect;
             float fieldRadius = Controller.Config.FieldRadius;
             float hardLimit = fieldRadius + screenWidth * camParam.BoundaryOvershoot;
