@@ -1,5 +1,6 @@
 using LH.Domain;
 using LH.Player;
+using LH.Save;
 using UnityEngine;
 
 namespace LH.Boot {
@@ -14,10 +15,12 @@ namespace LH.Boot {
 
         private void Setup() {
             var input = new PlayerInput();
+            var save = new SaveSystem();
+            save.Init();
 
-            GameContext.Setup(input);
+            GameContext.Setup(input, save);
 
-            Updater.Run(new() { input });
+            Updater.Run(new() { input, save });
         }
     }
 }

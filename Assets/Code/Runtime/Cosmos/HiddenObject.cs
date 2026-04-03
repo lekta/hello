@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using LH.Domain;
+using LH.Save;
 using UnityEngine;
 using Random = System.Random;
 
@@ -13,7 +14,8 @@ namespace LH.Cosmos {
         private const float BLACKOUT_INTERVAL_MIN = 40f;
         private const float BLACKOUT_INTERVAL_MAX = 50f;
 
-        public HiddenObjectData Data { get; private set; }
+        public HiddenObjectData Data { get; }
+        public int Id => Data.Index;
         public Vector2 Position => Data.Position;
         public float Radius => Data.Radius;
 
@@ -26,7 +28,9 @@ namespace LH.Cosmos {
         public float TremorCoef { get; private set; }
 
         public float FocusTime { get; private set; }
-        public bool Revealed { get; private set; }
+
+        private HiddenObjectSave _save;
+        public bool Revealed { get => _save.Revealed; private set => _save.Revealed = value; }
 
 
         public HiddenObject(HiddenObjectData data) {
@@ -39,11 +43,17 @@ namespace LH.Cosmos {
             // DO: блэкаут не у всех, а только по типу палинга
             _blackoutDelay = BLACKOUT_INTERVAL_MIN + (float)rng.NextDouble() * (BLACKOUT_INTERVAL_MAX - BLACKOUT_INTERVAL_MIN);
             _blackoutTimer = (float)rng.NextDouble() * _blackoutDelay;
-            
+
             TremorCoef = rng.NextFloat() * ANOMALY_TREMOR;
+
+            _save = GameContext.Save.GetHiddenState(Id) ?? new HiddenObjectSave { Id = Id };
         }
 
+
         public void Update(float dt, Vector2 cursorPos, bool isFocus) {
+            if (Revealed)
+                return;
+
             UpdateBlackout(dt);
             UpdateReveal(dt, cursorPos, isFocus);
         }
@@ -62,15 +72,16 @@ namespace LH.Cosmos {
                 BlackoutCoef = 1f;
             }
         }
-        
+
         private void UpdateReveal(float dt, Vector2 cursorPos, bool isFocus) {
             bool isRevealing = false;
-            
+
             float dist = (cursorPos - Position).magnitude;
             if (dist < Radius * .5f) {
                 if (isFocus) {
                     isRevealing = true;
                 }
+
                 // DO: добавить логику анхайда - когда ещё не раскрыт фокусом, но под лупой уже "виднеется"
             }
 
@@ -78,12 +89,16 @@ namespace LH.Cosmos {
                 FocusTime += dt;
 
                 if (FocusTime >= REVEAL_FOCUS_TIME) {
-                    Revealed = true;
-                    // DO: save state
+                    Reveal();
                 }
             } else if (FocusTime > 0) {
                 FocusTime = Mathf.MoveTowards(FocusTime, 0f, dt * 2f);
             }
+        }
+
+        private void Reveal() {
+            Revealed = true;
+            GameContext.Save.SetHiddenState(Id, _save);
         }
     }
 }

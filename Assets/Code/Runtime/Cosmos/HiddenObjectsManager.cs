@@ -36,6 +36,7 @@ namespace LH.Cosmos {
             _hiddens.Clear();
             var rng = new Random(seed);
 
+
             for (int i = 0; i < count; i++) {
                 var hidden = PlaceHiddenObject(rng, fieldRadius, stars, i);
                 _hiddens.Add(hidden);
