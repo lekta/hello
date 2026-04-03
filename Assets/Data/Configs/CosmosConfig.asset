@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 923addcd56c24221be3580b878e5dda3, type: 3}
   m_Name: CosmosConfig
   m_EditorClassIdentifier: 
-  CosmicBody: {fileID: 1360830325204513465, guid: 7082ae6fa2fb50b4bb0271b91890de85, type: 3}
+  Star: {fileID: 1360830325204513465, guid: 7082ae6fa2fb50b4bb0271b91890de85, type: 3}
   HiddenObject: {fileID: 6709759161415797235, guid: abd67d9cbe230a448ab32e9c70655632, type: 3}
   Seed: 42
-  BodyCount: 920
+  StarCount: 600
   HiddenObjectCount: 7
   FieldRadius: 2500
   StarsParams:

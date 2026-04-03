@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 6393751557960857444}
   - component: {fileID: 1360830325204513465}
   m_Layer: 0
-  m_Name: CosmicBody
+  m_Name: Star
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

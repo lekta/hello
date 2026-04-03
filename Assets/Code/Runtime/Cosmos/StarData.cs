@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 namespace LH.Cosmos {
-    public class CosmicBodyData {
+    public class StarData {
         public int Index;
 
         public Vector2 AnchorPosition;

@@ -18,7 +18,7 @@ namespace LH.Cosmos {
         private readonly List<HiddenObjectView> _views = new();
 
 
-        public void Init(CosmosController cosmos, float fieldRadius, IReadOnlyList<CosmicBodyData> starDatas) {
+        public void Init(CosmosController cosmos, float fieldRadius, IReadOnlyList<StarData> starDatas) {
             _cosmos = cosmos;
             var sw = Stopwatch.StartNew();
 
@@ -29,10 +29,10 @@ namespace LH.Cosmos {
             GenerateHiddenObjects(cfg.Seed + 7777, cfg.HiddenObjectCount, fieldRadius, starDatas);
             CreateViews(cfg.HiddenObject);
 
-            Debug.Log($"Cosmic hidden ({_hiddens.Count}) generated in {sw.ElapsedMilliseconds} ms");
+            Debug.Log($"Hidden objects ({_hiddens.Count}) generated in {sw.ElapsedMilliseconds} ms");
         }
 
-        private void GenerateHiddenObjects(int seed, int count, float fieldRadius, IReadOnlyList<CosmicBodyData> stars) {
+        private void GenerateHiddenObjects(int seed, int count, float fieldRadius, IReadOnlyList<StarData> stars) {
             _hiddens.Clear();
             var rng = new Random(seed);
 
@@ -43,7 +43,7 @@ namespace LH.Cosmos {
             }
         }
 
-        private HiddenObject PlaceHiddenObject(Random rng, float fieldRadius, IReadOnlyList<CosmicBodyData> stars, int index) {
+        private HiddenObject PlaceHiddenObject(Random rng, float fieldRadius, IReadOnlyList<StarData> stars, int index) {
             var bestPos = Vector2.zero;
             var lastPos = Vector2.zero;
             var bestAffected = new List<(int, float)>();
@@ -107,7 +107,7 @@ namespace LH.Cosmos {
                 view.UpdateManual();
         }
 
-        public static void GenerateField(int seed, int count, float fieldRadius, List<CosmicBodyData> stars, List<HiddenObjectData> outHidden) {
+        public static void GenerateField(int seed, int count, float fieldRadius, List<StarData> stars, List<HiddenObjectData> outHidden) {
             outHidden.Clear();
             var rng = new Random(seed + 7777);
             var taken = new bool[stars.Count];

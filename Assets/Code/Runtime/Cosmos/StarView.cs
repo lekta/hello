@@ -2,15 +2,15 @@
 using UnityEngine;
 
 namespace LH.Cosmos {
-    public class CosmicBodyView : MonoBehaviour {
+    public class StarView : MonoBehaviour {
         [SerializeField] private SpriteRenderer _image;
 
-        private CosmicBodyData _data;
+        private StarData _data;
         private Vector2 _lastPosition;
         private float _lastScale;
 
 
-        public void Setup(CosmicBodyData data) {
+        public void Setup(StarData data) {
             _data = data;
             _image.color = data.Color;
             gameObject.SetActive(true);

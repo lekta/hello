@@ -7,16 +7,16 @@ using Object = UnityEngine.Object;
 using Random = System.Random;
 
 namespace LH.Cosmos {
-    public class CosmicBodiesManager {
+    public class StarsManager {
         private CosmosController _cosmos;
         private StarsCreationParams _starsParams;
 
         private float _fieldRadius;
-        private Transform _bodiesHolder;
-        private readonly List<CosmicBodyData> _datas = new();
-        private readonly List<CosmicBodyView> _bodies = new();
+        private Transform _starsHolder;
+        private readonly List<StarData> _datas = new();
+        private readonly List<StarView> _views = new();
 
-        public IReadOnlyList<CosmicBodyData> Datas => _datas;
+        public IReadOnlyList<StarData> Datas => _datas;
 
 
         public void Init(CosmosController cosmos, float fieldRadius) {
@@ -25,34 +25,34 @@ namespace LH.Cosmos {
             _fieldRadius = fieldRadius;
             var sw = Stopwatch.StartNew();
 
-            _bodiesHolder = new GameObject("bodies").transform;
-            _bodiesHolder.SetParent(_cosmos.transform);
+            _starsHolder = new GameObject("stars").transform;
+            _starsHolder.SetParent(_cosmos.transform);
 
-            RecreateBodies();
+            RecreateStars();
 
-            Debug.Log($"Cosmic bodies ({_datas.Count}) generated in {sw.ElapsedMilliseconds} ms");
+            Debug.Log($"Stars ({_datas.Count}) generated in {sw.ElapsedMilliseconds} ms");
         }
 
-        private void RecreateBodies() {
-            for (int i = 0; i < _bodies.Count; i++) {
-                _bodies[i].TurnOff();
+        private void RecreateStars() {
+            for (int i = 0; i < _views.Count; i++) {
+                _views[i].TurnOff();
             }
 
             var cfg = _cosmos.Config;
-            var prefab = cfg.CosmicBody;
-            while (_bodies.Count < cfg.BodyCount) {
-                var body = Object.Instantiate(prefab, _bodiesHolder);
-                _bodies.Add(body);
+            var prefab = cfg.Star;
+            while (_views.Count < cfg.StarCount) {
+                var view = Object.Instantiate(prefab, _starsHolder);
+                _views.Add(view);
             }
 
-            GenerateField(cfg.Seed, cfg.BodyCount, _fieldRadius, _datas, _starsParams, cfg.ColorZones);
+            GenerateField(cfg.Seed, cfg.StarCount, _fieldRadius, _datas, _starsParams, cfg.ColorZones);
 
             for (int i = 0; i < _datas.Count; i++) {
-                _bodies[i].Setup(_datas[i]);
+                _views[i].Setup(_datas[i]);
             }
         }
 
-        public static void GenerateField(int seed, int count, float radius, List<CosmicBodyData> outDatas, StarsCreationParams stars, ColorZone[] colorZones = null) {
+        public static void GenerateField(int seed, int count, float radius, List<StarData> outDatas, StarsCreationParams stars, ColorZone[] colorZones = null) {
             outDatas.Clear();
             var rng = new Random(seed);
 
@@ -65,7 +65,7 @@ namespace LH.Cosmos {
                 Vector2 pos = NextStarPosition(rng, radius, clusterCenters, stars);
                 float scale = stars.RandomSize(rng);
 
-                outDatas.Add(new CosmicBodyData {
+                outDatas.Add(new StarData {
                     Index = i,
                     AnchorPosition = pos,
                     AnchorScale = scale,
@@ -115,8 +115,8 @@ namespace LH.Cosmos {
                 if (hidden.Revealed)
                     continue;
 
-                foreach (var bodyIdx in hidden.AffectedStars.Keys) {
-                    var data = _datas[bodyIdx];
+                foreach (var starIdx in hidden.AffectedStars.Keys) {
+                    var data = _datas[starIdx];
                     ApplyHiddenTeasering(data, hidden, time);
                 }
             }
@@ -127,8 +127,8 @@ namespace LH.Cosmos {
                 ApplyCursorFocus(data, cursorPos, activity, time);
             }
 
-            foreach (var body in _bodies) {
-                body.ManualUpdate();
+            foreach (var view in _views) {
+                view.ManualUpdate();
             }
         }
 
@@ -171,13 +171,13 @@ namespace LH.Cosmos {
             );
         }
 
-        private void ApplyTwinkle(CosmicBodyData data, float time) {
+        private void ApplyTwinkle(StarData data, float time) {
             float subtle = 1f - _starsParams.TwinkleSubtle * Mathf.Sin(time * data.TwinkleSpeed + data.TwinklePhase);
             float blink = Mathf.Pow(Mathf.Abs(Mathf.Sin(time * data.BlinkSpeed + data.BlinkPhase)), _starsParams.BlinkSharpness);
             data.Brightness = subtle * blink;
         }
 
-        private void ApplyHiddenTeasering(CosmicBodyData data, HiddenObject hidden, float time) {
+        private void ApplyHiddenTeasering(StarData data, HiddenObject hidden, float time) {
             if (hidden.BlackoutCoef > 0f) {
                 data.Brightness *= 1f - hidden.BlackoutCoef;
             }
@@ -189,12 +189,12 @@ namespace LH.Cosmos {
         }
 
 
-        private void ApplyCursorFocus(CosmicBodyData data, Vector2 cursorPos, float activity, float time) {
+        private void ApplyCursorFocus(StarData data, Vector2 cursorPos, float activity, float time) {
             if (activity < .001f)
                 return;
 
-            Vector2 toBody = data.AnchorPosition - cursorPos;
-            float dist = toBody.magnitude;
+            Vector2 toStar = data.AnchorPosition - cursorPos;
+            float dist = toStar.magnitude;
             if (dist >= _starsParams.FocusRadius)
                 return;
 
@@ -211,7 +211,7 @@ namespace LH.Cosmos {
                 return;
             }
 
-            Vector2 dir = toBody / dist;
+            Vector2 dir = toStar / dist;
 
             if (dist < _starsParams.FocusSnapRadius) {
                 float snapT = 1f - dist / _starsParams.FocusSnapRadius;
@@ -225,14 +225,14 @@ namespace LH.Cosmos {
                 data.Position = Vector2.Lerp(data.Position, fisheyePos, blend);
             }
 
-            // Дрожь: усиливается ближе к центру фокуса, зависит от чувствительности тела
+            // Дрожь: усиливается ближе к центру фокуса, зависит от чувствительности звезды
             float tremorStrength = data.TremorSensitivity * activity * (1f - t) * _starsParams.TremorAmplitude;
             float tx = Mathf.Sin(time * (170f - 153f * t) + data.TwinklePhase * 3.7f) * tremorStrength;
             float ty = Mathf.Sin(time * (130f - 117f * t) + data.BlinkPhase * 2.3f) * tremorStrength;
             data.Position += new Vector2(tx, ty);
         }
 
-        private void AttractToAnchors(CosmicBodyData data) {
+        private void AttractToAnchors(StarData data) {
             float dt = Time.deltaTime;
 
             var delta = data.AnchorPosition - data.Position;

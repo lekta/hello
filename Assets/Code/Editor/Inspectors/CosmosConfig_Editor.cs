@@ -9,7 +9,7 @@ namespace LH.Dev {
     public class CosmosConfig_Editor : Editor {
         private static Material _glMaterial;
 
-        private readonly List<CosmicBodyData> _cachedStars = new();
+        private readonly List<StarData> _cachedStars = new();
         private readonly List<HiddenObjectData> _cachedHidden = new();
         private int _cachedSeed;
         private int _cachedCount;
@@ -61,19 +61,19 @@ namespace LH.Dev {
 
         private void EnsureCachedStars(CosmosConfig cfg) {
             if (_cachedSeed == cfg.Seed
-                && _cachedCount == cfg.BodyCount
+                && _cachedCount == cfg.StarCount
                 && Mathf.Approximately(_cachedRadius, cfg.FieldRadius)
-                && _cachedStars.Count == cfg.BodyCount
+                && _cachedStars.Count == cfg.StarCount
                 && _cachedHiddenCount == cfg.HiddenObjectCount
                )
                 return;
 
             _cachedSeed = cfg.Seed;
-            _cachedCount = cfg.BodyCount;
+            _cachedCount = cfg.StarCount;
             _cachedRadius = cfg.FieldRadius;
             _cachedHiddenCount = cfg.HiddenObjectCount;
 
-            CosmicBodiesManager.GenerateField(cfg.Seed, cfg.BodyCount, cfg.FieldRadius, _cachedStars, cfg.StarsParams, cfg.ColorZones);
+            StarsManager.GenerateField(cfg.Seed, cfg.StarCount, cfg.FieldRadius, _cachedStars, cfg.StarsParams, cfg.ColorZones);
             HiddenObjectsManager.GenerateField(cfg.Seed, cfg.HiddenObjectCount, cfg.FieldRadius, _cachedStars, _cachedHidden);
         }
 
