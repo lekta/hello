@@ -7,9 +7,9 @@ using Random = System.Random;
 
 namespace LH.Cosmos {
     public class HiddenObject {
-        private const float REVEAL_FOCUS_TIME = 1f;
+        public const float REVEAL_FOCUS_TIME = 1f;
 
-        private const float ANOMALY_TREMOR = .8f;
+        private const float ANOMALY_TREMOR = .3f;
         private const float BLACKOUT_DURATION = .5f;
         private const float BLACKOUT_INTERVAL_MIN = 40f;
         private const float BLACKOUT_INTERVAL_MAX = 50f;
@@ -44,7 +44,7 @@ namespace LH.Cosmos {
             _blackoutDelay = BLACKOUT_INTERVAL_MIN + (float)rng.NextDouble() * (BLACKOUT_INTERVAL_MAX - BLACKOUT_INTERVAL_MIN);
             _blackoutTimer = (float)rng.NextDouble() * _blackoutDelay;
 
-            TremorCoef = rng.NextFloat() * ANOMALY_TREMOR;
+            TremorCoef = .1f + rng.NextFloat() * ANOMALY_TREMOR;
 
             _save = GameContext.Save.GetHiddenState(Id) ?? new HiddenObjectSave { Id = Id };
         }

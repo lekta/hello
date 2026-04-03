@@ -11,6 +11,7 @@ namespace LH.Cosmos {
         // первые частицы - локальные, следующие за курсором; вторые - распыляющиеся, остаются в мировых координатах
         [SerializeField] private ParticleSystem _linkParticles;
         [SerializeField] private ParticleSystem _worldParticles;
+        [SerializeField] private ParticleSystem _startFocusParticles;
 
         private CosmosCursor _cursor;
         private CursorState _prevState;
@@ -58,6 +59,9 @@ namespace LH.Cosmos {
 
         private void ApplyState(CursorState state) {
             bool focus = state == CursorState.Focus;
+            if (focus) {
+                _startFocusParticles.Emit(10);
+            }
             Color color = focus ? new Color(1f, .0f, .3f, .9f) : _baseParticleColor;
 
             RecolorExistingParticles(color);

@@ -229,8 +229,9 @@ namespace LH.Cosmos {
                 data.Brightness *= 1f - hidden.BlackoutCoef;
             }
 
-            float tx = Mathf.Sin(time * 11f + data.Index * 2.3f) * hidden.TremorCoef;
-            float ty = Mathf.Sin(time * 9f + data.Index * 3.1f) * hidden.TremorCoef;
+            // DO: ослаблять эффект к краям
+            float tx = Mathf.Sin(time * 101f + data.Index * 2.3f) * hidden.TremorCoef;
+            float ty = Mathf.Sin(time * 97f + data.Index * 3.1f) * hidden.TremorCoef;
             data.Position += new Vector2(tx, ty);
         }
 

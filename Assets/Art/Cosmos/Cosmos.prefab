@@ -132,13 +132,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Config: {fileID: 11400000, guid: c363f80771c87cc4aa6f88aac2000d9b, type: 2}
   CameraMoveParams:
-    DeadZone: 0.25
+    DeadZone: 0.33
     MaxSpeedZone: 0.67
     ScrollSpeed: 1.2
     Smoothing: 4
-    BoundaryStiffness: 10
-    BoundaryOvershoot: 0.5
+    BoundaryStiffness: 9
+    BoundaryOvershoot: 0.2
     Parallax: 0.13
+  CameraShakeParams:
+    MaxOffset: 4
+    Decay: 3
+    Frequency: 25
+    FocusImpulse: 2
+    RevealShakeMax: 0.6
   Camera: {fileID: 4280530059435408778}
   Cursor: {fileID: 0}
   Background: {fileID: 3286302094042142894}
@@ -210,7 +216,7 @@ Camera:
   far clip plane: 10000
   field of view: 60
   orthographic: 1
-  orthographic size: 400
+  orthographic size: 500
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2

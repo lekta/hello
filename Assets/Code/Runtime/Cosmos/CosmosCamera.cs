@@ -6,18 +6,20 @@ namespace LH.Cosmos {
         private Camera _camera;
         private Transform _background;
         private CosmosCursor _cursor;
+        private CameraShake _shake;
 
         private float _fieldRadius;
         private Vector2 _velocity;
         private Vector2 _bgHalfSize;
 
 
-        public void Init(Camera camera, Transform background, CosmosCursor cursor, float fieldRadius, CameraMoveParams moveParams) {
+        public void Init(Camera camera, Transform background, CosmosCursor cursor, float fieldRadius, CameraMoveParams moveParams, CameraShake shake) {
             _camera = camera;
             _background = background;
             _cursor = cursor;
             _fieldRadius = fieldRadius;
             _params = moveParams;
+            _shake = shake;
 
             var sr = background.GetComponent<SpriteRenderer>();
             if (sr != null)
@@ -49,6 +51,7 @@ namespace LH.Cosmos {
                     _velocity -= camPos.normalized * outward;
             }
 
+            camPos += _shake.GetOffset(dt);
             _camera.transform.position = new Vector3(camPos.x, camPos.y, _camera.transform.position.z);
 
             return camPos;
