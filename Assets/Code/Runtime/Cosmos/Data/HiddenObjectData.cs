@@ -28,7 +28,7 @@ namespace LH.Cosmos {
         }
 
         public string GetShortInfo() {
-            var sb = new StringBuilder("Hid#");
+            var sb = new StringBuilder("#");
             sb.Append(Id);
 
             sb.Append(", r=");

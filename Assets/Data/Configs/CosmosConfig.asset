@@ -100,7 +100,7 @@ MonoBehaviour:
     - rid: 1744154365138567174
     Content:
       rid: 1744154365138567178
-    Dependencies: ae3e0c00
+    Dependencies: ae3e0c0018650c002ce10500
   ColorZones:
   - Position: {x: -800, y: 400}
     Radius: 1200

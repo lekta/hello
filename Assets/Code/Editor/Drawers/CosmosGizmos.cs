@@ -12,12 +12,19 @@ namespace LH.Dev {
 
         private static readonly Color COLOR_DEFAULT = new(1f, 0.3f, 0.8f);
         private static readonly Color COLOR_SELECTED = new(0.4f, 0.9f, 1f);
+        private static readonly Color COLOR_HIGHLIGHT = new(1f, 1f, 0.2f);
+
+        public static int HighlightedHiddenId = -1;
 
         public static void DrawHidden(HiddenObjectData hidden, bool selected = false) {
             Vector3 pos = new Vector3(hidden.Position.x, hidden.Position.y, 0f);
-            Color tint = selected ? COLOR_SELECTED : COLOR_DEFAULT;
+            bool highlighted = HighlightedHiddenId == hidden.Id;
+            Color tint = highlighted ? COLOR_HIGHLIGHT : selected ? COLOR_SELECTED : COLOR_DEFAULT;
 
-            if (selected) {
+            if (highlighted) {
+                Handles.color = tint.WithAlpha(0.15f);
+                Handles.DrawSolidDisc(pos, Vector3.forward, hidden.Radius);
+            } else if (selected) {
                 Handles.color = tint.WithAlpha(0.06f);
                 Handles.DrawSolidDisc(pos, Vector3.forward, hidden.Radius);
             }
