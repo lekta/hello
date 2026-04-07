@@ -12,5 +12,7 @@ namespace LH.Cosmos {
 
         [Tooltip("Максимальный интервал между затемнениями")]
         public float IntervalMax = 50f;
+
+        public override string ToString() => $"Blackout ({Duration}s)";
     }
 }

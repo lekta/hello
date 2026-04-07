@@ -6,5 +6,7 @@ namespace LH.Cosmos {
     public class TremorBehavior : IHiddenBehavior {
         [Tooltip("Амплитуда дрожи звёзд")]
         public float Magnitude = 0.3f;
+
+        public override string ToString() => $"Tremor ({Magnitude})";
     }
 }

@@ -30,6 +30,8 @@ namespace LH.Dev {
         private int _selectedHiddenIndex = -1;
         private bool _hiddensExpanded = true;
 
+        private List<ConfigIssue> _inlineIssues = new();
+
 
         private void OnEnable() {
             SceneView.duringSceneGui += OnSceneGUI;
@@ -62,10 +64,12 @@ namespace LH.Dev {
 
             _hiddensList.onAddCallback = list => {
                 _hiddensProp.arraySize++;
-
-                // DO: а тут можно было бы и сразу сбросить данные, чтобы не ресетить их при каждой отрисовке
-
                 serializedObject.ApplyModifiedProperties();
+
+                var entry = Config.Hiddens[^1];
+                entry.ResetToDefaults();
+                entry.Behaviors.Add(new TremorBehavior());
+                EditorUtility.SetDirty(Config);
             };
         }
 
@@ -78,10 +82,37 @@ namespace LH.Dev {
             GuiEditorTools();
 
             CheckHiddenIds();
+            ClampHiddenValues();
 
             if (GUI.changed) {
                 serializedObject.ApplyModifiedProperties();
                 SceneView.RepaintAll();
+            }
+
+            GuiInlineValidation();
+        }
+
+        private void GuiInlineValidation() {
+            _inlineIssues = ConfigValidation.ValidateCosmos(Config);
+            if (_inlineIssues.Count == 0)
+                return;
+
+            GUILayout.Space(6);
+            DevGui.HorizontalLine();
+            EditorGUILayout.LabelField($"Validation ({_inlineIssues.Count})", EditorStyles.boldLabel);
+
+            foreach (var issue in _inlineIssues) {
+                var msgType = issue.Severity == IssueSeverity.Error ? MessageType.Error : MessageType.Warning;
+                string path = string.IsNullOrEmpty(issue.PropertyPath) ? "" : $"  [{issue.PropertyPath}]";
+
+                using (new GUILayout.HorizontalScope()) {
+                    EditorGUILayout.HelpBox($"{path} {issue.Message}", msgType);
+
+                    if (issue.HasAutoFix && GUILayout.Button("Fix", GUILayout.Width(40))) {
+                        issue.AutoFix.Invoke();
+                        serializedObject.Update();
+                    }
+                }
             }
         }
 
@@ -99,13 +130,18 @@ namespace LH.Dev {
             if (index >= _hiddensProp.arraySize)
                 return;
 
+            if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition) && _selectedHiddenIndex != index) {
+                _selectedHiddenIndex = index;
+                SceneView.RepaintAll();
+            }
+
             using var indent = new EditorGUI.IndentLevelScope();
 
             var elem = _hiddensProp.GetArrayElementAtIndex(index);
             rect.y += 2f;
             rect.height -= 4f;
 
-            EditorGUI.PropertyField(rect, elem, new GUIContent($"Hidden #{Config.Hiddens[index].Id}"), true);
+            EditorGUI.PropertyField(rect, elem, DevGui.GetContent(Config.Hiddens[index].GetShortInfo()), true);
         }
 
         private void GuiEditorTools() {
@@ -125,6 +161,7 @@ namespace LH.Dev {
                 bool needReset = hiddens[i].Id == 0 || _existingIdsCache.Contains(hiddens[i].Id);
                 if (needReset) {
                     hiddens[i].ResetToDefaults();
+                    hiddens[i].Behaviors.Add(new TremorBehavior());
                     changed = true;
 
                     do {
@@ -137,6 +174,30 @@ namespace LH.Dev {
             if (changed) {
                 EditorUtility.SetDirty(Config);
             }
+        }
+
+        private void ClampHiddenValues() {
+            bool changed = false;
+            float fieldRadius = Config.FieldRadius;
+
+            foreach (var h in Config.Hiddens) {
+                if (h.Radius < 10f) {
+                    h.Radius = 10f;
+                    changed = true;
+                }
+
+                if (h.Position.magnitude + h.Radius > fieldRadius) {
+                    float maxDist = fieldRadius - h.Radius;
+                    if (maxDist < 0f) maxDist = 0f;
+                    if (h.Position.magnitude > maxDist) {
+                        h.Position = h.Position.magnitude < .01f ? Vector2.zero : h.Position.normalized * maxDist;
+                        changed = true;
+                    }
+                }
+            }
+
+            if (changed)
+                EditorUtility.SetDirty(Config);
         }
 
 
@@ -228,6 +289,17 @@ namespace LH.Dev {
             }
         }
 
+        private void SelectHiddenInInspector(int index) {
+            _selectedHiddenIndex = index;
+            _hiddensList.index = index;
+            _hiddensExpanded = true;
+
+            if (_hiddensProp != null && index >= 0 && index < _hiddensProp.arraySize)
+                _hiddensProp.GetArrayElementAtIndex(index).isExpanded = true;
+
+            Repaint();
+        }
+
         private void DrawHiddenObjects(CosmosConfig cfg) {
             if (cfg.Hiddens.Count == 0)
                 return;
@@ -235,6 +307,28 @@ namespace LH.Dev {
             var lookup = new Dictionary<int, HiddenObjectData>();
             foreach (var h in cfg.Hiddens)
                 lookup[h.Id] = h;
+
+            // Клик по гизмо — выбор скрытого
+            if (Event.current.type == EventType.MouseDown && Event.current.button == 0) {
+                int closest = -1;
+                float closestDist = float.MaxValue;
+
+                for (int i = 0; i < cfg.Hiddens.Count; i++) {
+                    Vector3 pos3 = new Vector3(cfg.Hiddens[i].Position.x, cfg.Hiddens[i].Position.y, 0f);
+                    float dist = HandleUtility.DistanceToCircle(pos3, cfg.Hiddens[i].Radius);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closest = i;
+                    }
+                }
+
+                if (closest >= 0 && closestDist < 10f && closest != _selectedHiddenIndex) {
+                    SelectHiddenInInspector(closest);
+                    if (!_editHiddenPositions) {
+                        Event.current.Use();
+                    }
+                }
+            }
 
             for (int i = 0; i < cfg.Hiddens.Count; i++) {
                 var hidden = cfg.Hiddens[i];
@@ -246,8 +340,12 @@ namespace LH.Dev {
                     Vector3 newPos = Handles.PositionHandle(pos3, Quaternion.identity);
 
                     if (EditorGUI.EndChangeCheck()) {
+                        SelectHiddenInInspector(i);
                         Undo.RecordObject(cfg, "Move Hidden Object");
-                        hidden.Position = new Vector2(newPos.x, newPos.y);
+                        Vector2 pos = new Vector2(newPos.x, newPos.y);
+                        if (pos.magnitude > cfg.FieldRadius)
+                            pos = pos.normalized * cfg.FieldRadius;
+                        hidden.Position = pos;
                         EditorUtility.SetDirty(cfg);
                     }
                 }

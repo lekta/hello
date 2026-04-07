@@ -82,7 +82,7 @@ MonoBehaviour:
     Behaviors:
     - rid: 1744154365138567170
     Content:
-      rid: -2
+      rid: 1744154365138567176
     Dependencies: 
   - Id: 385324
     Position: {x: -1325.8566, y: -413.68784}
@@ -90,7 +90,7 @@ MonoBehaviour:
     Behaviors:
     - rid: 1744154365138567175
     Content:
-      rid: -2
+      rid: 1744154365138567177
     Dependencies: 
   - Id: 20110
     Position: {x: -591.06024, y: 56.414246}
@@ -99,8 +99,8 @@ MonoBehaviour:
     - rid: 1744154365138567173
     - rid: 1744154365138567174
     Content:
-      rid: -2
-    Dependencies: 
+      rid: 1744154365138567178
+    Dependencies: ae3e0c00
   ColorZones:
   - Position: {x: -800, y: 400}
     Radius: 1200
@@ -117,8 +117,6 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
-    - rid: -2
-      type: {class: , ns: , asm: }
     - rid: 1744154365138567168
       type: {class: KeyContent, ns: LH.Cosmos, asm: Runtime}
       data:
@@ -145,3 +143,15 @@ MonoBehaviour:
       type: {class: TremorBehavior, ns: LH.Cosmos, asm: Runtime}
       data:
         Magnitude: 0.3
+    - rid: 1744154365138567176
+      type: {class: KeyContent, ns: LH.Cosmos, asm: Runtime}
+      data:
+        KeyId: 
+    - rid: 1744154365138567177
+      type: {class: KeyContent, ns: LH.Cosmos, asm: Runtime}
+      data:
+        KeyId: 
+    - rid: 1744154365138567178
+      type: {class: PortalContent, ns: LH.Cosmos, asm: Runtime}
+      data:
+        LocationId: 

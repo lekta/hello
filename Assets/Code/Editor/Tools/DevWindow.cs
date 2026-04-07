@@ -11,7 +11,7 @@ namespace LH.Dev {
 
         private static readonly List<DevWindowPage> _pages = new() {
             new DevPage_Gameplay(),
-            null,
+            new DevPage_CI(),
             null,
             null,
             null
