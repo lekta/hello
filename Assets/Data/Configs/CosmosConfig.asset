@@ -16,7 +16,6 @@ MonoBehaviour:
   HiddenObject: {fileID: 6709759161415797235, guid: abd67d9cbe230a448ab32e9c70655632, type: 3}
   Seed: 42
   StarCount: 600
-  HiddenObjectCount: 7
   FieldRadius: 2500
   StarsParams:
     SmallRatio: 0.55
@@ -68,6 +67,14 @@ MonoBehaviour:
       m_NumAlphaKeys: 2
     TemperatureScaleDivisor: 16
     TemperatureRandomness: 0.25
+  Hiddens:
+  - Id: 802478
+    Position: {x: -959.53577, y: 662.21484}
+    Radius: 120
+    Behaviors: []
+    Content:
+      rid: -2
+    Dependencies: 
   ColorZones:
   - Position: {x: -800, y: 400}
     Radius: 1200
@@ -81,3 +88,8 @@ MonoBehaviour:
     Radius: 900
     Strength: 0.35
     Tint: {r: 0.5, g: 0.9, b: 0.8, a: 1}
+  references:
+    version: 2
+    RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }

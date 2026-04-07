@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,60 +26,28 @@ namespace LH.Cosmos {
             _holder.position = new Vector3(0, 0, 500);
 
             var cfg = cosmos.Config;
-            GenerateHiddenObjects(cfg.Seed + 7777, cfg.HiddenObjectCount, fieldRadius, starDatas);
+            CreateHiddenObjects(cfg.Seed + 7777, cfg.Hiddens, starDatas);
             CreateViews(cfg.HiddenObject);
 
             Debug.Log($"Hidden objects ({_hiddens.Count}) generated in {sw.ElapsedMilliseconds} ms");
         }
 
-        private void GenerateHiddenObjects(int seed, int count, float fieldRadius, IReadOnlyList<StarData> stars) {
+        private void CreateHiddenObjects(int seed, List<HiddenObjectData> entries, IReadOnlyList<StarData> stars) {
             _hiddens.Clear();
             var rng = new Random(seed);
 
-            for (int i = 0; i < count; i++) {
-                var hidden = PlaceHiddenObject(rng, fieldRadius, stars, i);
-                _hiddens.Add(hidden);
-            }
-        }
-
-        private HiddenObject PlaceHiddenObject(Random rng, float fieldRadius, IReadOnlyList<StarData> stars, int index) {
-            var bestPos = Vector2.zero;
-            var lastPos = Vector2.zero;
-            var bestAffected = new List<(int, float)>();
-            float bestRadius = 170f;
-
-            // Пробуем разместить где больше звёзд
-            for (int attempt = 0; attempt < 100; attempt++) {
-                float randomAngle = (float)(rng.NextDouble() * Math.PI * 2.0);
-                float randomRadius = fieldRadius * .7f * (float)Math.Sqrt(rng.NextDouble());
-                Vector2 pos = new Vector2(Mathf.Cos(randomAngle) * randomRadius, Mathf.Sin(randomAngle) * randomRadius);
-
-                float teaserRadius = 80f + (float)rng.NextDouble() * 120f;
+            for (int i = 0; i < entries.Count; i++) {
+                var data = entries[i];
+                var hidden = new HiddenObject(data);
 
                 var affected = stars
-                    .Select(s => (s.Index, Dist : (s.AnchorPosition - pos).magnitude))
-                    .Where(t => t.Dist < teaserRadius)
+                    .Select(s => (s.Index, Dist: (s.AnchorPosition - data.Position).magnitude))
+                    .Where(t => t.Dist < data.Radius)
                     .ToList();
 
-                if (affected.Count > bestAffected.Count) {
-                    bestAffected = affected;
-                    bestPos = pos;
-                    bestRadius = teaserRadius;
-                }
-                if (affected.Count > 5) {
-                    break;
-                }
-                lastPos = pos;
+                hidden.Init(affected, rng);
+                _hiddens.Add(hidden);
             }
-            if (bestPos == Vector2.zero) {
-                bestPos = lastPos;
-            }
-
-            var data = new HiddenObjectData { Index = index, Position = bestPos, Radius = bestRadius };
-            var hidden = new HiddenObject(data);
-            hidden.Init(bestAffected, rng);
-
-            return hidden;
         }
 
         private void CreateViews(HiddenObjectView prefab) {
@@ -105,38 +72,6 @@ namespace LH.Cosmos {
             // DO: сделать подписку вьюхи на стейт-ченжед
             foreach (var view in _views)
                 view.UpdateManual();
-        }
-
-        public static void GenerateField(int seed, int count, float fieldRadius, List<StarData> stars, List<HiddenObjectData> outHidden) {
-            outHidden.Clear();
-            var rng = new Random(seed + 7777);
-            var taken = new bool[stars.Count];
-
-            for (int i = 0; i < count; i++) {
-                for (int attempt = 0; attempt < 200; attempt++) {
-                    float angle = (float)(rng.NextDouble() * Math.PI * 2.0);
-                    float r = fieldRadius * 0.7f * (float)Math.Sqrt(rng.NextDouble());
-                    Vector2 pos = new Vector2(Mathf.Cos(angle) * r, Mathf.Sin(angle) * r);
-                    float radius = 80f + (float)rng.NextDouble() * 120f;
-
-                    int affected = 0;
-                    for (int si = 0; si < stars.Count; si++) {
-                        if (taken[si])
-                            continue;
-                        if ((stars[si].AnchorPosition - pos).magnitude < radius)
-                            affected++;
-                    }
-
-                    if (affected >= 3) {
-                        for (int si = 0; si < stars.Count; si++) {
-                            if (!taken[si] && (stars[si].AnchorPosition - pos).magnitude < radius)
-                                taken[si] = true;
-                        }
-                        outHidden.Add(new HiddenObjectData { Index = i, Position = pos, Radius = radius });
-                        break;
-                    }
-                }
-            }
         }
     }
 }

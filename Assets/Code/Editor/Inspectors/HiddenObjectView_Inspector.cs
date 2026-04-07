@@ -24,7 +24,7 @@ namespace LH.Dev {
             if (hidden == null) {
                 GUILayout.Label("No instance");
             } else {
-                GUILayout.Label($"#{hidden.Data.Index}; revealed {hidden.Revealed}");
+                GUILayout.Label($"#{hidden.Data.Id}; revealed {hidden.Revealed}");
             }
         }
 
