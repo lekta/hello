@@ -1,13 +1,15 @@
 using System.Collections.Generic;
-using System.Linq;
 using LH.Cosmos;
 using LH.Domain;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace LH.Dev {
     [CustomEditor(typeof(CosmosConfig))]
     public class CosmosConfig_Editor : Editor {
+        private const string HIDDENS_PROP = "Hiddens";
+
         private CosmosConfig Config => (CosmosConfig)target;
 
         private static Material _glMaterial;
@@ -17,32 +19,64 @@ namespace LH.Dev {
         private int _cachedCount;
         private float _cachedRadius;
 
-        private HashSet<int> _existingIdsCache = new(16);
+        private readonly HashSet<int> _existingIdsCache = new(16);
 
         private static bool _showColorsGizmo;
         private static bool _editHiddenPositions;
 
+        private SerializedProperty _hiddensProp;
+        private ReorderableList _hiddensList;
+
+        private int _selectedHiddenIndex = -1;
+        private bool _hiddensExpanded = true;
+
 
         private void OnEnable() {
             SceneView.duringSceneGui += OnSceneGUI;
+            InitHiddens();
         }
 
         private void OnDisable() {
             SceneView.duringSceneGui -= OnSceneGUI;
+            _hiddensProp = null;
+        }
+
+        private void InitHiddens() {
+            _hiddensProp = serializedObject.FindProperty(HIDDENS_PROP);
+            _hiddensList = new ReorderableList(serializedObject, _hiddensProp, true, false, true, true);
+
+            _hiddensList.elementHeightCallback = index => {
+                if (index >= _hiddensProp.arraySize)
+                    return EditorGUIUtility.singleLineHeight;
+                var elem = _hiddensProp.GetArrayElementAtIndex(index);
+                return EditorGUI.GetPropertyHeight(elem, true) + 4f;
+            };
+
+            _hiddensList.drawElementCallback = GuiHiddenElement;
+
+            _hiddensList.onSelectCallback = list => {
+                // DO: работает только если в фокус попал сам элемент, а не его поле
+                _selectedHiddenIndex = list.index;
+                SceneView.RepaintAll();
+            };
+
+            _hiddensList.onAddCallback = list => {
+                _hiddensProp.arraySize++;
+
+                // DO: а тут можно было бы и сразу сбросить данные, чтобы не ресетить их при каждой отрисовке
+
+                serializedObject.ApplyModifiedProperties();
+            };
         }
 
         public override void OnInspectorGUI() {
             serializedObject.Update();
 
-            DrawDefaultInspector();
+            DrawPropertiesExcluding(serializedObject, "m_Script", HIDDENS_PROP);
 
-            GUILayout.Space(6);
-            GUILayout.Label("  Editor");
+            GuiHiddens();
+            GuiEditorTools();
 
-            _showColorsGizmo = EditorGUILayout.ToggleLeft("Show color zones", _showColorsGizmo);
-            _editHiddenPositions = EditorGUILayout.ToggleLeft("Edit hidden positions", _editHiddenPositions);
-
-            GUILayout.Space(6);
             CheckHiddenIds();
 
             if (GUI.changed) {
@@ -51,15 +85,51 @@ namespace LH.Dev {
             }
         }
 
+        private void GuiHiddens() {
+            var hiddensProp = serializedObject.FindProperty(HIDDENS_PROP);
+
+            _hiddensExpanded = EditorGUILayout.Foldout(_hiddensExpanded, $"Hiddens ({hiddensProp.arraySize})", true);
+            if (!_hiddensExpanded) {
+                return;
+            }
+            _hiddensList.DoLayoutList();
+        }
+
+        private void GuiHiddenElement(Rect rect, int index, bool isActive, bool isFocused) {
+            if (index >= _hiddensProp.arraySize)
+                return;
+
+            using var indent = new EditorGUI.IndentLevelScope();
+
+            var elem = _hiddensProp.GetArrayElementAtIndex(index);
+            rect.y += 2f;
+            rect.height -= 4f;
+
+            EditorGUI.PropertyField(rect, elem, new GUIContent($"Hidden #{Config.Hiddens[index].Id}"), true);
+        }
+
+        private void GuiEditorTools() {
+            GUILayout.Space(6);
+            GUILayout.Label("  Editor");
+
+            _showColorsGizmo = EditorGUILayout.ToggleLeft("Show color zones", _showColorsGizmo);
+            _editHiddenPositions = EditorGUILayout.ToggleLeft("Edit hidden positions", _editHiddenPositions);
+        }
+
         private void CheckHiddenIds() {
             bool changed = false;
             var hiddens = Config.Hiddens;
             _existingIdsCache.Clear();
 
             for (int i = 0; i < hiddens.Count; i++) {
-                while (hiddens[i].Id == 0 || _existingIdsCache.Contains(hiddens[i].Id)) {
-                    hiddens[i].Id = Random.Range(1000, 999999);
+                bool needReset = hiddens[i].Id == 0 || _existingIdsCache.Contains(hiddens[i].Id);
+                if (needReset) {
+                    hiddens[i].ResetToDefaults();
                     changed = true;
+
+                    do {
+                        hiddens[i].Id = Random.Range(1000, 999999);
+                    } while (_existingIdsCache.Contains(hiddens[i].Id));
                 }
                 _existingIdsCache.Add(hiddens[i].Id);
             }
@@ -154,7 +224,7 @@ namespace LH.Dev {
 
                 Handles.color = color.WithAlpha(.4f);
                 Handles.DrawWireDisc(pos, Vector3.forward, zone.Radius);
-                Handles.Label(pos, $"Zone #{i} ({zone.Strength:P0})", EditorStyles.whiteBoldLabel);
+                Handles.Label(pos, $"Color {i}, ({zone.Strength:P0})", EditorStyles.whiteLabel);
             }
         }
 
@@ -168,6 +238,7 @@ namespace LH.Dev {
 
             for (int i = 0; i < cfg.Hiddens.Count; i++) {
                 var hidden = cfg.Hiddens[i];
+                bool selected = i == _selectedHiddenIndex;
 
                 if (_editHiddenPositions) {
                     EditorGUI.BeginChangeCheck();
@@ -182,7 +253,7 @@ namespace LH.Dev {
                 }
 
                 if (Event.current.type == EventType.Repaint) {
-                    CosmosGizmos.DrawHidden(hidden);
+                    CosmosGizmos.DrawHidden(hidden, selected);
                     CosmosGizmos.DrawDependencies(hidden, lookup);
                 }
             }

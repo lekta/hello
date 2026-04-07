@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace LH.Dev {
     [CustomPropertyDrawer(typeof(MinMaxRangeAttribute))]
-    public class MinMaxRangeDrawer : PropertyDrawer {
+    public class MinMaxRange_Drawer : PropertyDrawer {
         private const float FIELD_WIDTH = 48f;
         private const float PAD = 4f;
 

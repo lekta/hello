@@ -10,23 +10,33 @@ namespace LH.Dev {
         private const float GAP_LENGTH = 12f;
         private const float ARROW_SIZE = 18f;
 
-        public static void DrawHidden(HiddenObjectData hidden) {
+        private static readonly Color COLOR_DEFAULT = new(1f, 0.3f, 0.8f);
+        private static readonly Color COLOR_SELECTED = new(0.4f, 0.9f, 1f);
+
+        public static void DrawHidden(HiddenObjectData hidden, bool selected = false) {
             Vector3 pos = new Vector3(hidden.Position.x, hidden.Position.y, 0f);
+            Color tint = selected ? COLOR_SELECTED : COLOR_DEFAULT;
+
+            if (selected) {
+                Handles.color = tint.WithAlpha(0.06f);
+                Handles.DrawSolidDisc(pos, Vector3.forward, hidden.Radius);
+            }
 
             // Радиус воздействия
-            Handles.color = new Color(1f, 0.3f, 0.8f, 0.5f);
+            Handles.color = tint.WithAlpha(selected ? 0.8f : 0.5f);
             Handles.DrawWireDisc(pos, Vector3.forward, hidden.Radius);
 
             // Зона обнаружения
-            Handles.color = new Color(1f, 0.3f, 0.8f, 0.2f);
+            Handles.color = tint.WithAlpha(selected ? 0.35f : 0.2f);
             Handles.DrawWireDisc(pos, Vector3.forward, hidden.Radius * 0.5f);
 
             // Крестик
+            Handles.color = tint.WithAlpha(selected ? 0.9f : 0.5f);
             float cross = Mathf.Min(hidden.Radius * 0.05f, 10f);
             Handles.DrawLine(pos + Vector3.left * cross, pos + Vector3.right * cross);
             Handles.DrawLine(pos + Vector3.down * cross, pos + Vector3.up * cross);
 
-            Handles.Label(pos + Vector3.up * (hidden.Radius + 5f), $"Hidden #{hidden.Id}", EditorStyles.whiteBoldLabel);
+            Handles.Label(pos + Vector3.up * (hidden.Radius + 5f), $"H#{hidden.Id}", EditorStyles.whiteLabel);
         }
 
         public static void DrawDependencies(HiddenObjectData hidden, Dictionary<int, HiddenObjectData> lookup) {

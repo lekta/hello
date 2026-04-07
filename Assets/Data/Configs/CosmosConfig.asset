@@ -71,7 +71,33 @@ MonoBehaviour:
   - Id: 802478
     Position: {x: -959.53577, y: 662.21484}
     Radius: 120
-    Behaviors: []
+    Behaviors:
+    - rid: 1744154365138567169
+    Content:
+      rid: 1744154365138567168
+    Dependencies: 
+  - Id: 812312
+    Position: {x: 391.92297, y: -13.514526}
+    Radius: 150
+    Behaviors:
+    - rid: 1744154365138567170
+    Content:
+      rid: -2
+    Dependencies: 
+  - Id: 385324
+    Position: {x: -1325.8566, y: -413.68784}
+    Radius: 110
+    Behaviors:
+    - rid: 1744154365138567175
+    Content:
+      rid: -2
+    Dependencies: 
+  - Id: 20110
+    Position: {x: -591.06024, y: 56.414246}
+    Radius: 90
+    Behaviors:
+    - rid: 1744154365138567173
+    - rid: 1744154365138567174
     Content:
       rid: -2
     Dependencies: 
@@ -93,3 +119,29 @@ MonoBehaviour:
     RefIds:
     - rid: -2
       type: {class: , ns: , asm: }
+    - rid: 1744154365138567168
+      type: {class: KeyContent, ns: LH.Cosmos, asm: Runtime}
+      data:
+        KeyId: 
+    - rid: 1744154365138567169
+      type: {class: TremorBehavior, ns: LH.Cosmos, asm: Runtime}
+      data:
+        Magnitude: 0.3
+    - rid: 1744154365138567170
+      type: {class: TremorBehavior, ns: LH.Cosmos, asm: Runtime}
+      data:
+        Magnitude: 0.2
+    - rid: 1744154365138567173
+      type: {class: TremorBehavior, ns: LH.Cosmos, asm: Runtime}
+      data:
+        Magnitude: 0.1
+    - rid: 1744154365138567174
+      type: {class: BlackoutBehavior, ns: LH.Cosmos, asm: Runtime}
+      data:
+        Duration: 0.5
+        IntervalMin: 5
+        IntervalMax: 20
+    - rid: 1744154365138567175
+      type: {class: TremorBehavior, ns: LH.Cosmos, asm: Runtime}
+      data:
+        Magnitude: 0.3
