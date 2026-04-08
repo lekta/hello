@@ -131,7 +131,7 @@ namespace LH.Cosmos {
             // DO: для ключей - проверить зависимости
             
             if (Data.Content is PortalContent portal)
-                GameState.EnterStory(portal.StoryId);
+                GameState.EnterImprint(portal.ImprintId);
         }
     }
 }

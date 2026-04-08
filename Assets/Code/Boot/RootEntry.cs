@@ -10,7 +10,6 @@ using UnityEngine;
 namespace LH.Boot {
     public class RootEntry : MonoBehaviour {
         public RootConfigs RootConfigs;
-        public CosmosController Cosmos;
 
         private void Awake() {
             Debug.Log("Hello Awaken..");
@@ -24,11 +23,12 @@ namespace LH.Boot {
             RootConfigs.Init();
 
             var input = new PlayerInput();
+
             var save = new SaveSystem();
             save.Init();
 
             var gameState = new GameStateController();
-            gameState.Init(Cosmos);
+            gameState.Init();
 
             GameContext.Setup(input, save, gameState);
 

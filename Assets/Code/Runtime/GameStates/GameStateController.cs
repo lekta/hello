@@ -1,7 +1,7 @@
 using Cysharp.Threading.Tasks;
 using LH.Api;
 using LH.Cosmos;
-using LH.Story;
+using LH.Domain;
 using UnityEngine.SceneManagement;
 
 namespace LH.GameStates {
@@ -9,43 +9,47 @@ namespace LH.GameStates {
         private CosmosController _cosmos;
 
         private bool _inTransition;
-        private string _loadedStoryScene;
+        
+        // DO: Scene?
+        private string _loadedImprintScene;
 
 
-        public void Init(CosmosController cosmos) {
-            _cosmos = cosmos;
+        public void Init() {
+            // DO: тут нужно инициализировать и "где мы находимся"
+            // если стартовали дебаг сразу с импринта, космоса не будет
+            _cosmos = SceneExtension.GetComponentInLoadedScene<CosmosController>();
         }
 
-        public void EnterStory(int storyId) {
+        public void EnterImprint(int imprintId) {
             if (_inTransition)
                 return;
-            EnterStoryAsync(storyId).Forget();
+            EnterImprintAsync(imprintId).Forget();
         }
 
-        public void ExitStory() {
-            if (_inTransition || _loadedStoryScene == null)
+        public void ExitImprint() {
+            if (_inTransition || _loadedImprintScene == null)
                 return;
-            ExitStoryAsync().Forget();
+            ExitImprintAsync().Forget();
         }
 
-        private async UniTaskVoid EnterStoryAsync(int storyId) {
+        private async UniTaskVoid EnterImprintAsync(int imprintId) {
             _inTransition = true;
-            var story = RootConfigs.Instance.Stories.GetStory(storyId);
+            var imprint = RootConfigs.Instance.Imprints.GetImprint(imprintId);
 
             await AnimateCosmosHide();
 
             _cosmos.gameObject.SetActive(false);
-            await SceneManager.LoadSceneAsync(story.SceneName, LoadSceneMode.Additive);
-            _loadedStoryScene = story.SceneName;
+            await SceneManager.LoadSceneAsync(imprint.SceneName, LoadSceneMode.Additive);
+            _loadedImprintScene = imprint.SceneName;
 
             _inTransition = false;
         }
 
-        private async UniTaskVoid ExitStoryAsync() {
+        private async UniTaskVoid ExitImprintAsync() {
             _inTransition = true;
 
-            await SceneManager.UnloadSceneAsync(_loadedStoryScene);
-            _loadedStoryScene = null;
+            await SceneManager.UnloadSceneAsync(_loadedImprintScene);
+            _loadedImprintScene = null;
 
             _cosmos.gameObject.SetActive(true);
             await AnimateCosmosShow();

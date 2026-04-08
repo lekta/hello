@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 89e2b60a8a53a744397eba295d23f816, type: 3}
-  m_Name: FirstBow_StoryConfig
+  m_Name: FirstBow_Imprint
   m_EditorClassIdentifier: 
-  Id: 0
+  Id: 1
   SceneName: 

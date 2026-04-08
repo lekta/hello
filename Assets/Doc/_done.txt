@@ -1,7 +1,7 @@
 ﻿
 архив выполненного
 
-База для локаций (Story): StoryConfig/StoriesConfig с кешем по Id, GameStateController (IGameState через GameContext) для переходов космос↔локация с асинк-анимацией (UniTask), RootConfigs-синглтон, портал запускает переход в Story при раскрытии скрытого
+База для локаций (Imprint): ImprintConfig/ImprintsConfig с кешем по Id, GameStateController (IGameState через GameContext) для переходов космос↔локация с асинк-анимацией (UniTask), RootConfigs-синглтон, портал запускает переход в Imprint при раскрытии скрытого
 
 ToString для классов поведений/содержимого скрытых; кастомный инспектор зависимостей — дропдаун с фильтрацией циклов, подсветка в сцене при наведении
 

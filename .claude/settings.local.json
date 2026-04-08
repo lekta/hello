@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(mv \"Assets/Code/Runtime/Story/StoryConfig.cs\" \"Assets/Code/Runtime/Story/ImprintConfig.cs\")",
+      "Bash(mv \"Assets/Code/Runtime/Story/StoriesConfig.cs\" \"Assets/Code/Runtime/Story/ImprintsConfig.cs\")",
+      "Bash(mv \"Assets/Code/Runtime/Story\" \"Assets/Code/Runtime/Imprint\")",
+      "Bash(mv \"Assets/Code/Runtime/Imprint/StoryConfig.cs.meta\" \"Assets/Code/Runtime/Imprint/ImprintConfig.cs.meta\")",
+      "Bash(mv \"Assets/Code/Runtime/Imprint/StoriesConfig.cs.meta\" \"Assets/Code/Runtime/Imprint/ImprintsConfig.cs.meta\")",
+      "Bash(mv \"Assets/Code/Runtime/Story.meta\" \"Assets/Code/Runtime/Imprint.meta\")",
+      "Bash(mv \"Assets/Data/Configs/Stories.meta\" \"Assets/Data/Configs/Imprints.meta\")",
+      "Bash(mv \"Assets/Data/Configs/StoriesConfig.asset\" \"Assets/Data/Configs/ImprintsConfig.asset\")",
+      "Bash(mv \"Assets/Data/Configs/StoriesConfig.asset.meta\" \"Assets/Data/Configs/ImprintsConfig.asset.meta\")",
+      "Bash(mv \"Assets/Data/Configs/Imprints/FirstBow_StoryConfig.asset\" \"Assets/Data/Configs/Imprints/FirstBow_ImprintConfig.asset\")",
+      "Bash(mv \"Assets/Data/Configs/Imprints/FirstBow_StoryConfig.asset.meta\" \"Assets/Data/Configs/Imprints/FirstBow_ImprintConfig.asset.meta\")"
     ]
   }
 }
