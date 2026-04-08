@@ -7,8 +7,8 @@ using UnityEditor;
 
 namespace LH.Dev {
     public static class ImprintUtils {
-        private const string IMPRINTS_SCENES_FOLDER = "Assets/Data/Scenes/Imprints";
-        private const string IMPRINTS_CONFIG_PATH = "Assets/Data/Configs/ImprintsConfig.asset";
+        private static string IMPRINTS_SCENES_FOLDER => ImprintPaths.IMPRINTS_SCENES_FOLDER;
+        private static string IMPRINTS_CONFIG_PATH => ImprintPaths.IMPRINTS_CONFIG;
 
         private static ImprintsConfig _cachedImprintsConfig;
 

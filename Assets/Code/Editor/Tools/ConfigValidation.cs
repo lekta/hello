@@ -19,9 +19,6 @@ namespace LH.Dev {
             foreach (var imprints in FindAllAssets<ImprintsConfig>())
                 ImprintUtils.ValidateImprints(imprints, issues);
 
-            foreach (var imprint in FindAllAssets<ImprintConfig>())
-                ImprintUtils.ValidateImprint(imprint, issues);
-
             return issues;
         }
 

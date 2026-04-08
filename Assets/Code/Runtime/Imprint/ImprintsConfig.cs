@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace LH.Imprint {
@@ -8,13 +9,16 @@ namespace LH.Imprint {
 
         private Dictionary<int, ImprintConfig> _cache;
 
+
         public ImprintConfig GetImprint(int imprintId) {
             if (_cache == null) {
-                _cache = new Dictionary<int, ImprintConfig>(Imprints.Count);
-                foreach (var s in Imprints)
-                    _cache[s.Id] = s;
+                _cache = Imprints.ToDictionary(kv => kv.Id);
             }
-            return _cache.TryGetValue(imprintId, out var imprint) ? imprint : null;
+            return _cache.GetValueOrDefault(imprintId);
         }
+
+#if UNITY_EDITOR
+        private void OnValidate() => _cache = null;
+#endif
     }
 }

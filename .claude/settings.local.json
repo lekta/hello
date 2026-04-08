@@ -12,7 +12,9 @@
       "Bash(mv \"Assets/Data/Configs/StoriesConfig.asset\" \"Assets/Data/Configs/ImprintsConfig.asset\")",
       "Bash(mv \"Assets/Data/Configs/StoriesConfig.asset.meta\" \"Assets/Data/Configs/ImprintsConfig.asset.meta\")",
       "Bash(mv \"Assets/Data/Configs/Imprints/FirstBow_StoryConfig.asset\" \"Assets/Data/Configs/Imprints/FirstBow_ImprintConfig.asset\")",
-      "Bash(mv \"Assets/Data/Configs/Imprints/FirstBow_StoryConfig.asset.meta\" \"Assets/Data/Configs/Imprints/FirstBow_ImprintConfig.asset.meta\")"
+      "Bash(mv \"Assets/Data/Configs/Imprints/FirstBow_StoryConfig.asset.meta\" \"Assets/Data/Configs/Imprints/FirstBow_ImprintConfig.asset.meta\")",
+      "Bash(mv \"Assets/Code/Runtime/Imprint/ImprintInfoProvider.cs\" \"Assets/Code/Runtime/Imprint/DebugInfoProvider.cs\")",
+      "Bash(mv \"Assets/Code/Runtime/Imprint/ImprintInfoProvider.cs.meta\" \"Assets/Code/Runtime/Imprint/DebugInfoProvider.cs.meta\")"
     ]
   }
 }

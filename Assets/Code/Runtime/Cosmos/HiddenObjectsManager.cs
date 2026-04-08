@@ -64,6 +64,7 @@ namespace LH.Cosmos {
             Vector2 cursorPos = _cosmos.CursorWorldPos;
             bool isFocus = _cosmos.CursorState == CursorState.Focus;
 
+            // DO: если будет тормозить, попробовать реализовать через SoA
             for (int hi = 0; hi < _hiddens.Count; hi++) {
                 var hidden = _hiddens[hi];
                 hidden.Update(dt, cursorPos, isFocus);

@@ -2,6 +2,7 @@ using Cysharp.Threading.Tasks;
 using LH.Api;
 using LH.Cosmos;
 using LH.Domain;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace LH.GameStates {
@@ -35,6 +36,12 @@ namespace LH.GameStates {
         private async UniTaskVoid EnterImprintAsync(int imprintId) {
             _inTransition = true;
             var imprint = RootConfigs.Instance.Imprints.GetImprint(imprintId);
+
+            if (imprint == null) {
+                Debug.LogError($"Imprint #{imprintId} not found in config");
+                _inTransition = false;
+                return;
+            }
 
             await AnimateCosmosHide();
 
