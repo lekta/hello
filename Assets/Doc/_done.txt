@@ -1,6 +1,8 @@
 ﻿
 архив выполненного
 
+Редактор импринтов: SceneDropdown атрибут+дровер для выбора сцены из Build Settings, ImprintEditorUtils (валидация, утилиты), ImprintConfig_Editor с инлайн-валидацией, валидация в CI-странице DevWindow
+
 База для локаций (Imprint): ImprintConfig/ImprintsConfig с кешем по Id, GameStateController (IGameState через GameContext) для переходов космос↔локация с асинк-анимацией (UniTask), RootConfigs-синглтон, портал запускает переход в Imprint при раскрытии скрытого
 
 ToString для классов поведений/содержимого скрытых; кастомный инспектор зависимостей — дропдаун с фильтрацией циклов, подсветка в сцене при наведении

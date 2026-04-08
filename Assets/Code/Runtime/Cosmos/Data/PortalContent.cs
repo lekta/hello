@@ -1,10 +1,16 @@
 using System;
+using LH.Domain;
 
 namespace LH.Cosmos {
     [Serializable]
     public class PortalContent : IHiddenContent {
-        public int ImprintId;
+        [ImprintSelect] public int ImprintId;
 
-        public override string ToString() => $"Portal → {ImprintId}";
+        private string GetImprintName() {
+            // DO: 
+            return ImprintId.ToString();
+        }
+
+        public override string ToString() => $"Portal ({GetImprintName()})";
     }
 }

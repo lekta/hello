@@ -154,4 +154,4 @@ MonoBehaviour:
     - rid: 1744154365138567178
       type: {class: PortalContent, ns: LH.Cosmos, asm: LH.Runtime}
       data:
-        LocationId: 
+        ImprintId: 178

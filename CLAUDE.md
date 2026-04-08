@@ -35,7 +35,8 @@ Assets/Code/Editor/Tools/DevWindow.cs - отладочное окно
 ```
 Assets/Data/
   Configs/  — тут все конфиги
-  Scenes/   — тут сцены (космос и локации будут)
+  Scenes/   — тут сцены
+    Imprints/ - сцены импринтов
 ```
 
 Сцена Cosmos - звёздное поле с курсором и скрытыми объектами

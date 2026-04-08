@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89e2b60a8a53a744397eba295d23f816, type: 3}
   m_Name: FirstBow_Imprint
   m_EditorClassIdentifier: 
-  Id: 1
-  SceneName: 
+  Id: 178
+  SceneName: imprint_FirstBow

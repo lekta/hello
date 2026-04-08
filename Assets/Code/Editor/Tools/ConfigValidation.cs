@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using LH.Cosmos;
+using LH.Imprint;
 using UnityEditor;
 using Object = UnityEngine.Object;
 
@@ -14,6 +15,12 @@ namespace LH.Dev {
 
             foreach (var camera in FindAllAssets<CameraConfig>())
                 ValidateCamera(camera, issues);
+
+            foreach (var imprints in FindAllAssets<ImprintsConfig>())
+                ImprintUtils.ValidateImprints(imprints, issues);
+
+            foreach (var imprint in FindAllAssets<ImprintConfig>())
+                ImprintUtils.ValidateImprint(imprint, issues);
 
             return issues;
         }

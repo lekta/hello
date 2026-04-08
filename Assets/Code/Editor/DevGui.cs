@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using System;
+using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 namespace LH.Dev {
@@ -40,6 +42,39 @@ namespace LH.Dev {
             rect.height = height;
             rect.y += padding * 0.5f;
             EditorGUI.DrawRect(rect, new Color(.5f, .5f, .5f, 1));
+        }
+
+        /// <summary>
+        /// Рисует блок инлайн-валидации. Вызывать в конце OnInspectorGUI.
+        /// issues обновляются только при dirty=true (OnEnable / GUI.changed).
+        /// </summary>
+        public static void DrawInlineValidation(ref List<ConfigIssue> issues, ref bool dirty, Func<List<ConfigIssue>> validate, SerializedObject serializedObject = null) {
+            if (dirty) {
+                issues = validate();
+                dirty = false;
+            }
+
+            if (issues == null || issues.Count == 0)
+                return;
+
+            GUILayout.Space(6);
+            HorizontalLine();
+            EditorGUILayout.LabelField($"Validation ({issues.Count})", EditorStyles.boldLabel);
+
+            foreach (var issue in issues) {
+                var msgType = issue.Severity == IssueSeverity.Error ? MessageType.Error : MessageType.Warning;
+                string path = string.IsNullOrEmpty(issue.PropertyPath) ? "" : $"  [{issue.PropertyPath}]";
+
+                using (new GUILayout.HorizontalScope()) {
+                    EditorGUILayout.HelpBox($"{path} {issue.Message}", msgType);
+
+                    if (issue.HasAutoFix && GUILayout.Button("Fix", GUILayout.Width(40))) {
+                        issue.AutoFix.Invoke();
+                        serializedObject?.Update();
+                        dirty = true;
+                    }
+                }
+            }
         }
     }
 }

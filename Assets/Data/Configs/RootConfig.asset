@@ -12,4 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d57c206b5f702fd49a2a6346b682ce83, type: 3}
   m_Name: RootConfig
   m_EditorClassIdentifier: 
-  Stories: {fileID: 11400000, guid: 7ff152b97395b1b4c9740eb889766d69, type: 2}
+  Imprints: {fileID: 11400000, guid: 7ff152b97395b1b4c9740eb889766d69, type: 2}

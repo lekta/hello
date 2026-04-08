@@ -30,12 +30,14 @@ namespace LH.Dev {
         private int _selectedHiddenIndex = -1;
         private bool _hiddensExpanded = true;
 
-        private List<ConfigIssue> _inlineIssues = new();
+        private List<ConfigIssue> _inlineIssues;
+        private bool _validationDirty;
 
 
         private void OnEnable() {
             SceneView.duringSceneGui += OnSceneGUI;
             InitHiddens();
+            _validationDirty = true;
         }
 
         private void OnDisable() {
@@ -87,33 +89,10 @@ namespace LH.Dev {
             if (GUI.changed) {
                 serializedObject.ApplyModifiedProperties();
                 SceneView.RepaintAll();
+                _validationDirty = true;
             }
 
-            GuiInlineValidation();
-        }
-
-        private void GuiInlineValidation() {
-            _inlineIssues = ConfigValidation.ValidateCosmos(Config);
-            if (_inlineIssues.Count == 0)
-                return;
-
-            GUILayout.Space(6);
-            DevGui.HorizontalLine();
-            EditorGUILayout.LabelField($"Validation ({_inlineIssues.Count})", EditorStyles.boldLabel);
-
-            foreach (var issue in _inlineIssues) {
-                var msgType = issue.Severity == IssueSeverity.Error ? MessageType.Error : MessageType.Warning;
-                string path = string.IsNullOrEmpty(issue.PropertyPath) ? "" : $"  [{issue.PropertyPath}]";
-
-                using (new GUILayout.HorizontalScope()) {
-                    EditorGUILayout.HelpBox($"{path} {issue.Message}", msgType);
-
-                    if (issue.HasAutoFix && GUILayout.Button("Fix", GUILayout.Width(40))) {
-                        issue.AutoFix.Invoke();
-                        serializedObject.Update();
-                    }
-                }
-            }
+            DevGui.DrawInlineValidation(ref _inlineIssues, ref _validationDirty, () => ConfigValidation.ValidateCosmos(Config), serializedObject);
         }
 
         private void GuiHiddens() {
