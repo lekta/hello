@@ -1,9 +1,9 @@
 {
-    "name": "Edit",
+    "name": "LH.Editor",
     "rootNamespace": "",
     "references": [
-        "Base",
-        "Runtime"
+        "LH.Domain",
+        "LH.Runtime"
     ],
     "includePlatforms": [
         "Editor"

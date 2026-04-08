@@ -1,8 +1,11 @@
+using LH.Api;
 using LH.Domain;
 using UnityEngine;
 
 namespace LH.Cosmos {
     public class CosmosController : MonoBehaviour {
+        private static IInput Input => GameContext.Input;
+        
         public CosmosConfig Config;
         public CameraConfig CameraConfig;
 
@@ -13,9 +16,9 @@ namespace LH.Cosmos {
         private readonly StarsManager _stars = new();
         private readonly HiddenObjectsManager _hiddens = new();
         private readonly CosmosCamera _cosmosCamera = new();
-        private readonly CosmosCursor _cursor = new();
         private readonly CameraShake _shake = new();
 
+        private readonly CosmosCursor _cursor = new();
         public Vector2 CursorWorldPos => _cursor.Position;
         public float CursorActivity => _cursor.Activity;
         public CursorState CursorState => _cursor.State;
@@ -34,7 +37,7 @@ namespace LH.Cosmos {
         private void Update() {
             _cursor.Update();
 
-            if (GameContext.Input.ActionDown)
+            if (Input.ActionDown)
                 _shake.AddTrauma(CameraConfig.Shake.FocusImpulse);
 
             float maxReveal = 0f;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 namespace LH.Cosmos {
-    [CreateAssetMenu(menuName = "LH/Cosmos Config")]
     public class CosmosConfig : ScriptableObject {
         public StarView Star;
         public HiddenObjectView HiddenObject;

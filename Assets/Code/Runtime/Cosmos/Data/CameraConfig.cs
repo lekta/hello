@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 
 namespace LH.Cosmos {
-    [CreateAssetMenu(menuName = "LH/Camera Config")]
     public class CameraConfig : ScriptableObject {
         public CameraMoveParams Move;
         public CameraShakeParams Shake;

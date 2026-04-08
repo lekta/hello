@@ -1,13 +1,16 @@
 using System.IO;
 using LH.Cheats;
+using LH.Cosmos;
 using LH.Domain;
+using LH.GameStates;
 using LH.Player;
 using LH.Save;
 using UnityEngine;
 
 namespace LH.Boot {
     public class RootEntry : MonoBehaviour {
-        public RootConfig RootConfig;
+        public RootConfigs RootConfigs;
+        public CosmosController Cosmos;
 
         private void Awake() {
             Debug.Log("Hello Awaken..");
@@ -17,12 +20,17 @@ namespace LH.Boot {
 
         private void Setup() {
             CheatsPrepare();
-            
+
+            RootConfigs.Init();
+
             var input = new PlayerInput();
             var save = new SaveSystem();
             save.Init();
 
-            GameContext.Setup(input, save);
+            var gameState = new GameStateController();
+            gameState.Init(Cosmos);
+
+            GameContext.Setup(input, save, gameState);
 
             Updater.Run(new() { input, save });
         }

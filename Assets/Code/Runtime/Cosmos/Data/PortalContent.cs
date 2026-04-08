@@ -3,8 +3,8 @@ using System;
 namespace LH.Cosmos {
     [Serializable]
     public class PortalContent : IHiddenContent {
-        public string LocationId;
+        public int StoryId;
 
-        public override string ToString() => $"Portal → {LocationId}";
+        public override string ToString() => $"Portal → {StoryId}";
     }
 }

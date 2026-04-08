@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using LH.Api;
 using LH.Domain;
 using LH.Save;
 using UnityEngine;
@@ -13,6 +14,9 @@ namespace LH.Cosmos {
         private const float DEFAULT_BLACKOUT_DURATION = .5f;
         private const float DEFAULT_BLACKOUT_INTERVAL_MIN = 40f;
         private const float DEFAULT_BLACKOUT_INTERVAL_MAX = 50f;
+
+        private static ISaveSystem Save => GameContext.Save;
+        private static IGameState GameState => GameContext.GameState;
 
         public HiddenObjectData Data { get; }
         public int Id => Data.Id;
@@ -44,7 +48,7 @@ namespace LH.Cosmos {
 
             InitBehaviors(rng);
 
-            _save = GameContext.Save.GetHiddenState(Id) ?? new HiddenObjectSave { Id = Id };
+            _save = Save.GetHiddenState(Id) ?? new HiddenObjectSave { Id = Id };
         }
 
         private void InitBehaviors(Random rng) {
@@ -109,16 +113,25 @@ namespace LH.Cosmos {
                 FocusTime += dt;
 
                 if (FocusTime >= REVEAL_FOCUS_TIME) {
-                    Reveal();
+                    SetRevealed();
                 }
             } else if (FocusTime > 0) {
                 FocusTime = Mathf.MoveTowards(FocusTime, 0f, dt * 2f);
             }
         }
 
-        private void Reveal() {
+        private void SetRevealed() {
             Revealed = true;
-            GameContext.Save.SetHiddenState(Id, _save);
+            Save.SetHiddenState(Id, _save);
+
+            ApplyContents();
+        }
+
+        private void ApplyContents() {
+            // DO: для ключей - проверить зависимости
+            
+            if (Data.Content is PortalContent portal)
+                GameState.EnterStory(portal.StoryId);
         }
     }
 }

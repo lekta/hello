@@ -1,8 +1,9 @@
 {
-    "name": "Runtime",
+    "name": "LH.Runtime",
     "rootNamespace": "",
     "references": [
-        "Base"
+        "LH.Domain",
+        "UniTask"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
