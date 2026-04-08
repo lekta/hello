@@ -1,4 +1,6 @@
 ﻿
+Полиморфные локи скрытых: Dependencies→Locks (ILockCondition, HiddenLock), удалён KeyContent, рантайм блокировка с warmup 0.5с, обновлены drawer/gizmos/валидация
+
 архив выполненного
 
 Редактор импринтов: SceneDropdown атрибут+дровер для выбора сцены из Build Settings, ImprintEditorUtils (валидация, утилиты), ImprintConfig_Editor с инлайн-валидацией, валидация в CI-странице DevWindow

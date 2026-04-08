@@ -81,7 +81,7 @@ namespace LH.Cosmos {
 
             // Эффекты скрытых
             foreach (var hidden in hiddens) {
-                if (hidden.Revealed)
+                if (hidden.Revealed || !hidden.Active)
                     continue;
 
                 foreach (var starIdx in hidden.AffectedStars.Keys)

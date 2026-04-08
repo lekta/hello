@@ -16,6 +16,7 @@ namespace LH.Dev {
 
         public static int HighlightedHiddenId = -1;
 
+
         public static void DrawHidden(HiddenObjectData hidden, bool selected = false) {
             Vector3 pos = new Vector3(hidden.Position.x, hidden.Position.y, 0f);
             bool highlighted = HighlightedHiddenId == hidden.Id;
@@ -46,14 +47,16 @@ namespace LH.Dev {
             Handles.Label(pos + Vector3.up * (hidden.Radius + 5f), $"H#{hidden.Id}", EditorStyles.whiteLabel);
         }
 
-        public static void DrawDependencies(HiddenObjectData hidden, Dictionary<int, HiddenObjectData> lookup) {
-            if (hidden.Dependencies.IsEmpty())
+        public static void DrawLocks(HiddenObjectData hidden, Dictionary<int, HiddenObjectData> lookup) {
+            if (hidden.Locks.IsEmpty())
                 return;
 
             Vector3 from = new Vector3(hidden.Position.x, hidden.Position.y, 0f);
 
-            foreach (int depId in hidden.Dependencies) {
-                if (!lookup.TryGetValue(depId, out var dep))
+            foreach (var lck in hidden.Locks) {
+                if (lck is not HiddenLock hl)
+                    continue;
+                if (!lookup.TryGetValue(hl.HiddenId, out var dep))
                     continue;
 
                 Vector3 to = new Vector3(dep.Position.x, dep.Position.y, 0f);

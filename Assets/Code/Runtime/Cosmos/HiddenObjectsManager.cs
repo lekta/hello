@@ -14,6 +14,9 @@ namespace LH.Cosmos {
         private readonly List<HiddenObject> _hiddens = new();
         public IReadOnlyList<HiddenObject> Hiddens => _hiddens;
 
+        private readonly Dictionary<int, HiddenObject> _lookup = new();
+        private readonly Dictionary<int, List<HiddenObject>> _dependents = new();
+
         private readonly List<HiddenObjectView> _views = new();
 
 
@@ -34,6 +37,8 @@ namespace LH.Cosmos {
 
         private void CreateHiddenObjects(int seed, List<HiddenObjectData> entries, IReadOnlyList<StarData> stars) {
             _hiddens.Clear();
+            _lookup.Clear();
+            _dependents.Clear();
             var rng = new Random(seed);
 
             for (int i = 0; i < entries.Count; i++) {
@@ -47,6 +52,25 @@ namespace LH.Cosmos {
 
                 hidden.Init(affected, rng);
                 _hiddens.Add(hidden);
+                _lookup[hidden.Id] = hidden;
+            }
+
+            // Инициализация локов после создания всех объектов
+            foreach (var hidden in _hiddens)
+                hidden.InitLocks(_lookup);
+
+            // Обратный индекс: какой скрытый кого разблокирует
+            foreach (var hidden in _hiddens) {
+                if (hidden.Data.Locks == null) continue;
+                foreach (var lck in hidden.Data.Locks) {
+                    if (lck is HiddenLock hl) {
+                        if (!_dependents.TryGetValue(hl.HiddenId, out var list)) {
+                            list = new List<HiddenObject>();
+                            _dependents[hl.HiddenId] = list;
+                        }
+                        list.Add(hidden);
+                    }
+                }
             }
         }
 
@@ -67,12 +91,23 @@ namespace LH.Cosmos {
             // DO: если будет тормозить, попробовать реализовать через SoA
             for (int hi = 0; hi < _hiddens.Count; hi++) {
                 var hidden = _hiddens[hi];
+                bool wasRevealed = hidden.Revealed;
                 hidden.Update(dt, cursorPos, isFocus);
+
+                if (hidden.Revealed && !wasRevealed)
+                    NotifyDependents(hidden.Id);
             }
 
             // DO: сделать подписку вьюхи на стейт-ченжед
             foreach (var view in _views)
                 view.UpdateManual();
+        }
+
+        private void NotifyDependents(int revealedId) {
+            if (!_dependents.TryGetValue(revealedId, out var list))
+                return;
+            foreach (var dep in list)
+                dep.RemoveLock(revealedId);
         }
     }
 }

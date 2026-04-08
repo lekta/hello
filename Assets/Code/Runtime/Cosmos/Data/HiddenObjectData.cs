@@ -15,7 +15,7 @@ namespace LH.Cosmos {
         [SerializeReference, SubtypeSelect] public List<IHiddenBehavior> Behaviors;
         [SerializeReference, SubtypeSelect] public IHiddenContent Content;
 
-        public List<int> Dependencies;
+        [SerializeReference, SubtypeSelect] public List<ILockCondition> Locks;
 
 
         public void ResetToDefaults() {
@@ -24,7 +24,7 @@ namespace LH.Cosmos {
 
             Behaviors = new List<IHiddenBehavior>();
             Content = null;
-            Dependencies = new List<int>();
+            Locks = new List<ILockCondition>();
         }
 
         public string GetShortInfo() {

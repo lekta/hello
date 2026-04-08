@@ -9,11 +9,13 @@ namespace LH.Cosmos {
         public HiddenObjectData Data => Hidden?.Data;
 
         private bool _wasRevealed;
+        private bool _wasActive;
 
 
         public void Setup(HiddenObject hidden) {
             Hidden = hidden;
             _wasRevealed = hidden.Revealed;
+            _wasActive = hidden.Active;
 
             transform.localPosition = Data.Position;
 
@@ -24,9 +26,13 @@ namespace LH.Cosmos {
         }
 
         public void UpdateManual() {
+            if (!_wasActive && Hidden.Active) {
+                _wasActive = true;
+                RefreshState();
+            }
+
             if (Hidden.Revealed && !_wasRevealed) {
                 _wasRevealed = true;
-
                 RefreshState();
             }
 
@@ -37,8 +43,11 @@ namespace LH.Cosmos {
             if (_wasRevealed) {
                 _teaserParticles.Stop();
                 _image.gameObject.SetActive(true);
-            } else {
+            } else if (_wasActive) {
                 _teaserParticles.Play();
+                _image.gameObject.SetActive(false);
+            } else {
+                _teaserParticles.Stop();
                 _image.gameObject.SetActive(false);
             }
         }

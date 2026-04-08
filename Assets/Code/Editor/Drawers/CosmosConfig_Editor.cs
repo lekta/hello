@@ -331,7 +331,7 @@ namespace LH.Dev {
 
                 if (Event.current.type == EventType.Repaint) {
                     CosmosGizmos.DrawHidden(hidden, selected);
-                    CosmosGizmos.DrawDependencies(hidden, lookup);
+                    CosmosGizmos.DrawLocks(hidden, lookup);
                 }
             }
         }

@@ -9,6 +9,7 @@ using Random = System.Random;
 namespace LH.Cosmos {
     public class HiddenObject {
         public const float REVEAL_FOCUS_TIME = 1f;
+        public const float UNLOCK_WARMUP = .5f;
 
         private const float DEFAULT_TREMOR = .3f;
         private const float DEFAULT_BLACKOUT_DURATION = .5f;
@@ -38,6 +39,11 @@ namespace LH.Cosmos {
         private HiddenObjectSave _save;
         public bool Revealed { get => _save.Revealed; private set => _save.Revealed = value; }
 
+        public bool Locked => _pendingLocks != null && _pendingLocks.Count > 0;
+        public bool Active { get; private set; }
+        private List<HiddenLock> _pendingLocks;
+        private float _warmupTimer;
+
 
         public HiddenObject(HiddenObjectData data) {
             Data = data;
@@ -49,6 +55,20 @@ namespace LH.Cosmos {
             InitBehaviors(rng);
 
             _save = Save.GetHiddenState(Id) ?? new HiddenObjectSave { Id = Id };
+        }
+
+        public void InitLocks(IReadOnlyDictionary<int, HiddenObject> lookup) {
+            if (Data.Locks == null || Data.Locks.Count == 0) {
+                Active = true;
+                return;
+            }
+
+            _pendingLocks = new List<HiddenLock>();
+            foreach (var lck in Data.Locks) {
+                if (lck is HiddenLock hl && lookup.TryGetValue(hl.HiddenId, out var dep) && !dep.Revealed)
+                    _pendingLocks.Add(hl);
+            }
+            Active = !Locked;
         }
 
         private void InitBehaviors(Random rng) {
@@ -75,8 +95,28 @@ namespace LH.Cosmos {
             if (Revealed)
                 return;
 
+            if (Locked)
+                return;
+
+            if (!Active) {
+                _warmupTimer += dt;
+                if (_warmupTimer >= UNLOCK_WARMUP)
+                    Active = true;
+                return;
+            }
+
             UpdateBlackout(dt);
             UpdateReveal(dt, cursorPos, isFocus);
+        }
+
+        public void RemoveLock(int hiddenId) {
+            if (_pendingLocks == null) return;
+            for (int i = _pendingLocks.Count - 1; i >= 0; i--) {
+                if (_pendingLocks[i].HiddenId == hiddenId) {
+                    _pendingLocks.RemoveAt(i);
+                    break;
+                }
+            }
         }
 
         private void UpdateBlackout(float dt) {
@@ -128,8 +168,6 @@ namespace LH.Cosmos {
         }
 
         private void ApplyContents() {
-            // DO: для ключей - проверить зависимости
-            
             if (Data.Content is PortalContent portal)
                 GameState.EnterImprint(portal.ImprintId);
         }

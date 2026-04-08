@@ -75,7 +75,7 @@ MonoBehaviour:
     - rid: 1744154365138567169
     Content:
       rid: 1744154365138567168
-    Dependencies: 
+    Locks: []
   - Id: 812312
     Position: {x: 391.92297, y: -13.514526}
     Radius: 150
@@ -83,7 +83,7 @@ MonoBehaviour:
     - rid: 1744154365138567170
     Content:
       rid: 1744154365138567176
-    Dependencies: 
+    Locks: []
   - Id: 385324
     Position: {x: -1325.8566, y: -413.68784}
     Radius: 110
@@ -91,7 +91,7 @@ MonoBehaviour:
     - rid: 1744154365138567175
     Content:
       rid: 1744154365138567177
-    Dependencies: 
+    Locks: []
   - Id: 20110
     Position: {x: -591.06024, y: 56.414246}
     Radius: 90
@@ -100,7 +100,10 @@ MonoBehaviour:
     - rid: 1744154365138567174
     Content:
       rid: 1744154365138567178
-    Dependencies: ae3e0c0018650c002ce10500
+    Locks:
+    - rid: 1744154390541631489
+    - rid: 1744154390541631490
+    - rid: 1744154390541631491
   ColorZones:
   - Position: {x: -800, y: 400}
     Radius: 1200
@@ -117,6 +120,8 @@ MonoBehaviour:
   references:
     version: 2
     RefIds:
+    - rid: -2
+      type: {class: , ns: , asm: }
     - rid: 1744154365138567168
       type: {class: KeyContent, ns: LH.Cosmos, asm: LH.Runtime}
       data:
@@ -155,3 +160,15 @@ MonoBehaviour:
       type: {class: PortalContent, ns: LH.Cosmos, asm: LH.Runtime}
       data:
         ImprintId: 178
+    - rid: 1744154390541631489
+      type: {class: HiddenLock, ns: LH.Cosmos, asm: LH.Runtime}
+      data:
+        HiddenId: 802478
+    - rid: 1744154390541631490
+      type: {class: HiddenLock, ns: LH.Cosmos, asm: LH.Runtime}
+      data:
+        HiddenId: 812312
+    - rid: 1744154390541631491
+      type: {class: HiddenLock, ns: LH.Cosmos, asm: LH.Runtime}
+      data:
+        HiddenId: 385324

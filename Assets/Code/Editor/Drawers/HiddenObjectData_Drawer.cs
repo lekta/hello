@@ -8,7 +8,7 @@ using UnityEngine;
 namespace LH.Dev {
     [CustomPropertyDrawer(typeof(HiddenObjectData))]
     public class HiddenObjectData_Drawer : PropertyDrawer {
-        private const string DEPS_FIELD = "Dependencies";
+        private const string LOCKS_FIELD = "Locks";
 
         private const float PAD = 2f;
         private const float LINE = 20f;
@@ -28,8 +28,8 @@ namespace LH.Dev {
                     if (SerializedProperty.EqualContents(iter, end))
                         break;
 
-                    if (iter.name == DEPS_FIELD) {
-                        height += GetDepsHeight(iter) + PAD;
+                    if (iter.name == LOCKS_FIELD) {
+                        height += GetLocksHeight(iter) + PAD;
                     } else {
                         height += EditorGUI.GetPropertyHeight(iter, true) + PAD;
                     }
@@ -56,9 +56,9 @@ namespace LH.Dev {
                     if (SerializedProperty.EqualContents(iter, end))
                         break;
 
-                    if (iter.name == DEPS_FIELD) {
-                        float h = GetDepsHeight(iter);
-                        DrawDeps(new Rect(position.x, y, position.width, h), iter, property);
+                    if (iter.name == LOCKS_FIELD) {
+                        float h = GetLocksHeight(iter);
+                        DrawLocks(new Rect(position.x, y, position.width, h), iter, property);
                         y += h + PAD;
                     } else {
                         float h = EditorGUI.GetPropertyHeight(iter, true);
@@ -72,70 +72,68 @@ namespace LH.Dev {
         }
 
 
-        // ---- Dependencies UI ----
+        // ---- Locks UI ----
 
-        private static float GetDepsHeight(SerializedProperty depsProp) {
-            if (!depsProp.isExpanded)
+        private static float GetLocksHeight(SerializedProperty locksProp) {
+            if (!locksProp.isExpanded)
                 return LINE;
-            return LINE + depsProp.arraySize * (LINE + PAD) + LINE + PAD;
+            return LINE + locksProp.arraySize * (LINE + PAD) + LINE + PAD;
         }
 
-        private static void DrawDeps(Rect position, SerializedProperty depsProp, SerializedProperty parentProp) {
-            var config = depsProp.serializedObject.targetObject as CosmosConfig;
+        private static void DrawLocks(Rect position, SerializedProperty locksProp, SerializedProperty parentProp) {
+            var config = locksProp.serializedObject.targetObject as CosmosConfig;
             int hiddenIndex = ParseHiddenIndex(parentProp.propertyPath);
 
             if (config == null || hiddenIndex < 0 || hiddenIndex >= config.Hiddens.Count) {
-                EditorGUI.PropertyField(position, depsProp, true);
+                EditorGUI.PropertyField(position, locksProp, true);
                 return;
             }
 
             var currentHidden = config.Hiddens[hiddenIndex];
 
             Rect foldoutRect = new(position.x, position.y, position.width, LINE);
-            depsProp.isExpanded = EditorGUI.Foldout(foldoutRect, depsProp.isExpanded, $"Dependencies ({depsProp.arraySize})", true);
+            locksProp.isExpanded = EditorGUI.Foldout(foldoutRect, locksProp.isExpanded, $"Locks ({locksProp.arraySize})", true);
 
-            if (!depsProp.isExpanded)
+            if (!locksProp.isExpanded)
                 return;
 
             float indentPx = EditorGUI.indentLevel * 15f;
             float listX = position.x + indentPx;
             float listW = position.width - indentPx;
 
-            // Фон списка
-            float listContentH = depsProp.arraySize * (LINE + PAD) + LINE + PAD;
+            float listContentH = locksProp.arraySize * (LINE + PAD) + LINE + PAD;
             Rect bgRect = new(listX, position.y + LINE, listW, listContentH);
             EditorGUI.DrawRect(bgRect, new Color(0f, 0f, 0f, 0.08f));
 
             float y = position.y + LINE;
             bool mouseOnAnyItem = false;
 
-            for (int i = 0; i < depsProp.arraySize; i++) {
-                var elem = depsProp.GetArrayElementAtIndex(i);
-                int depId = elem.intValue;
+            for (int i = 0; i < locksProp.arraySize; i++) {
+                var lck = currentHidden.Locks != null && i < currentHidden.Locks.Count ? currentHidden.Locks[i] : null;
 
                 Rect rowRect = new(listX, y, listW, LINE);
                 Rect labelRect = new(listX, y, listW - REMOVE_BTN_WIDTH - PAD, LINE);
                 Rect removeRect = new(listX + listW - REMOVE_BTN_WIDTH, y, REMOVE_BTN_WIDTH, LINE);
 
-                // Зебра
                 if (i % 2 == 1)
                     EditorGUI.DrawRect(rowRect, new Color(0f, 0f, 0f, 0.05f));
 
+                int highlightId = lck is HiddenLock hl ? hl.HiddenId : -1;
                 bool hovered = rowRect.Contains(Event.current.mousePosition);
-                if (hovered) {
+                if (hovered && highlightId >= 0) {
                     mouseOnAnyItem = true;
-                    if (CosmosGizmos.HighlightedHiddenId != depId) {
-                        CosmosGizmos.HighlightedHiddenId = depId;
+                    if (CosmosGizmos.HighlightedHiddenId != highlightId) {
+                        CosmosGizmos.HighlightedHiddenId = highlightId;
                         SceneView.RepaintAll();
                     }
                     EditorGUI.DrawRect(rowRect, new Color(1f, 1f, 0.2f, 0.12f));
                 }
 
-                EditorGUI.LabelField(labelRect, GetHiddenLabel(config, depId));
+                EditorGUI.LabelField(labelRect, GetLockLabel(config, lck));
 
-                if (GUI.Button(removeRect, "×")) {
-                    depsProp.DeleteArrayElementAtIndex(i);
-                    depsProp.serializedObject.ApplyModifiedProperties();
+                if (GUI.Button(removeRect, "\u00d7")) {
+                    locksProp.DeleteArrayElementAtIndex(i);
+                    locksProp.serializedObject.ApplyModifiedProperties();
                     break;
                 }
 
@@ -150,12 +148,14 @@ namespace LH.Dev {
             Rect addRect = new(listX, y, listW, LINE);
 
             // DO: сделать как у нормальных списков через "+" справа
-            if (GUI.Button(addRect, "Add Dependency")) {
+            if (GUI.Button(addRect, "Add Lock (Hidden)")) {
                 var available = GetAvailableHiddens(currentHidden, config.Hiddens);
                 PopupWindow.Show(addRect, new HiddenPickerPopup(available, id => {
-                    depsProp.arraySize++;
-                    depsProp.GetArrayElementAtIndex(depsProp.arraySize - 1).intValue = id;
-                    depsProp.serializedObject.ApplyModifiedProperties();
+                    locksProp.arraySize++;
+                    locksProp.serializedObject.ApplyModifiedProperties();
+                    currentHidden.Locks ??= new();
+                    currentHidden.Locks[currentHidden.Locks.Count - 1] = new HiddenLock { HiddenId = id };
+                    EditorUtility.SetDirty(config);
                 }));
             }
         }
@@ -169,14 +169,21 @@ namespace LH.Dev {
             return match.Success ? int.Parse(match.Groups[1].Value) : -1;
         }
 
-        private static string GetHiddenLabel(CosmosConfig config, int id) {
-            foreach (var h in config.Hiddens) {
-                if (h.Id == id) {
-                    string info = h.Content != null ? h.Content.ToString() : "empty";
-                    return $"H#{id} - {info}";
+        private static string GetLockLabel(CosmosConfig config, ILockCondition lck) {
+            if (lck == null)
+                return "(null lock)";
+
+            if (lck is HiddenLock hl) {
+                foreach (var h in config.Hiddens) {
+                    if (h.Id == hl.HiddenId) {
+                        string info = h.Content != null ? h.Content.ToString() : "empty";
+                        return $"H#{hl.HiddenId} - {info}";
+                    }
                 }
+                return $"H#{hl.HiddenId} - (missing!)";
             }
-            return $"H#{id} - (missing!)";
+
+            return lck.ToString();
         }
 
         private static List<HiddenObjectData> GetAvailableHiddens(HiddenObjectData current, List<HiddenObjectData> all) {
@@ -192,9 +199,10 @@ namespace LH.Dev {
         private static HashSet<int> GetForbiddenIds(HiddenObjectData current, List<HiddenObjectData> all) {
             var forbidden = new HashSet<int> { current.Id };
 
-            if (current.Dependencies != null)
-                foreach (int d in current.Dependencies)
-                    forbidden.Add(d);
+            if (current.Locks != null)
+                foreach (var lck in current.Locks)
+                    if (lck is HiddenLock hl)
+                        forbidden.Add(hl.HiddenId);
 
             // BFS по обратным рёбрам: все X где X -> ... -> current.Id
             var queue = new Queue<int>();
@@ -202,8 +210,11 @@ namespace LH.Dev {
             while (queue.Count > 0) {
                 int id = queue.Dequeue();
                 foreach (var h in all) {
-                    if (h.Dependencies != null && h.Dependencies.Contains(id) && forbidden.Add(h.Id))
-                        queue.Enqueue(h.Id);
+                    if (h.Locks == null) continue;
+                    foreach (var lck in h.Locks) {
+                        if (lck is HiddenLock hl && hl.HiddenId == id && forbidden.Add(h.Id))
+                            queue.Enqueue(h.Id);
+                    }
                 }
             }
 

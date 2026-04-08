@@ -59,12 +59,11 @@ namespace LH.Dev {
                 if (h.Content == null)
                     issues.Add(new ConfigIssue { Message = $"Hidden #{h.Id}: no content", Severity = IssueSeverity.Warning, Asset = cfg, PropertyPath = $"{prefix}.Content" });
 
-                if (h.Dependencies != null) {
-                    for (int d = 0; d < h.Dependencies.Count; d++) {
-                        int depId = h.Dependencies[d];
-                        if (!cfg.Hiddens.Any(other => other.Id == depId))
-                            issues.Add(new ConfigIssue { Message = $"Hidden #{h.Id}: dependency {depId} not found", Severity = IssueSeverity.Error, Asset = cfg, PropertyPath = $"{prefix}.Dependencies",
-                                AutoFix = () => AutofixRemoveBadDependency(cfg, i, depId) });
+                if (h.Locks != null) {
+                    for (int d = 0; d < h.Locks.Count; d++) {
+                        if (h.Locks[d] is HiddenLock hl && !cfg.Hiddens.Any(other => other.Id == hl.HiddenId))
+                            issues.Add(new ConfigIssue { Message = $"Hidden #{h.Id}: lock references missing hidden {hl.HiddenId}", Severity = IssueSeverity.Error, Asset = cfg, PropertyPath = $"{prefix}.Locks",
+                                AutoFix = () => AutofixRemoveBadLock(cfg, i, hl.HiddenId) });
                     }
                 }
             }
@@ -94,10 +93,10 @@ namespace LH.Dev {
             EditorUtility.SetDirty(cfg);
         }
 
-        private static void AutofixRemoveBadDependency(CosmosConfig cfg, int hiddenIndex, int badDepId) {
+        private static void AutofixRemoveBadLock(CosmosConfig cfg, int hiddenIndex, int badHiddenId) {
             if (hiddenIndex >= cfg.Hiddens.Count) return;
-            Undo.RecordObject(cfg, "Autofix remove bad dependency");
-            cfg.Hiddens[hiddenIndex].Dependencies?.Remove(badDepId);
+            Undo.RecordObject(cfg, "Autofix remove bad lock");
+            cfg.Hiddens[hiddenIndex].Locks?.RemoveAll(lck => lck is HiddenLock hl && hl.HiddenId == badHiddenId);
             EditorUtility.SetDirty(cfg);
         }
 
